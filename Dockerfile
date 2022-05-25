@@ -16,4 +16,4 @@ COPY --from=builder /go/bin/k6 /usr/bin/k6
 
 USER 12345
 
-ENTRYPOINT ["k6-2-ext"]
+ENTRYPOINT ["k6"]
