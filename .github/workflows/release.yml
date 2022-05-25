@@ -1,4 +1,4 @@
-name: CI
+name: Release
 
 on:
   # Enable manually triggering this workflow via the API or web UI
