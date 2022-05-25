@@ -5,7 +5,7 @@ RUN CGO_ENABLED=0 go install -a -trimpath -ldflags "-s -w -X go.k6.io/k6/lib/con
 RUN go install -trimpath go.k6.io/xk6/cmd/xk6@latest
 RUN --mount=type=ssh xk6 build \ 
 --with github.com/mostafa/xk6-kafka@latest \
---with github.com/GhMartingit/xk6-mongo="/Users/Martin_Ghazaryan/VCProjects/xk6-mongo"
+--with github.com/GhMartingit/xk6-mongo
 RUN cp k6 $GOPATH/bin/k6
 
 FROM alpine:3.14
