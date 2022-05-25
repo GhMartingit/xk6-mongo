@@ -1,11 +1,12 @@
-FROM golang:1.17-alpine as builder
+FROM golang:1.18-alpine as builder
 WORKDIR $GOPATH/src/go.k6.io/k6
 ADD . .
+RUN apk --no-cache add openssh-client git
 RUN CGO_ENABLED=0 go install -a -trimpath -ldflags "-s -w -X go.k6.io/k6/lib/consts.VersionDetails=$(date -u +"%FT%T%z")/$(git describe --always --long --dirty)"
 RUN go install -trimpath go.k6.io/xk6/cmd/xk6@latest
 RUN --mount=type=ssh xk6 build \ 
 --with github.com/mostafa/xk6-kafka@latest \
---with github.com/GhMartingit/xk6-mongo
+--with github.com/GhMartingit/xk6-mongo@latest
 RUN cp k6 $GOPATH/bin/k6
 
 FROM alpine:3.14

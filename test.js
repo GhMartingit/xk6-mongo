@@ -7,7 +7,7 @@ export default ()=> {
     let doc = {
         correlationId: `test--mongodb`,
         title: 'Perf test experiment',
-        url: 'biotronik.com',
+        url: 'example.com',
         locale: 'en',
         time: `${new Date(Date.now()).toISOString()}`
       };
