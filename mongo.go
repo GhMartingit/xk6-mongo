@@ -2,9 +2,8 @@ package xk6_mongo
 
 import (
 	"context"
-	"log"
-
 	"go.mongodb.org/mongo-driver/bson"
+	"log"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -48,6 +47,18 @@ func (c *Client) Insert(database string, collection string, doc interface{}) err
 		return err
 	}
 	return nil
+}
+
+func (c *Client) InsertBatch(database string, collection string, docs []any) error {
+
+	db := c.client.Database(database)
+	col := db.Collection(collection)
+	_, err := col.InsertMany(context.TODO(), docs)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 
 func (c *Client) Find(database string, collection string, filter interface{}) []bson.M {
