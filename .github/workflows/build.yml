@@ -20,7 +20,7 @@ jobs:
         with:
           platform: linux/amd64 windows/amd64 darwin/amd64
           with: |
-            github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
+            github.com/bhavyagupta3006/xk6-mongo@${{ github.ref_name }}
       - name: Install Go 🧑‍💻
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
         uses: actions/setup-go@v3
