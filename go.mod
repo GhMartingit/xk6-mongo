@@ -2,7 +2,6 @@ module github.com/bhavyagupta3006/xk6-mongo
 
 go 1.18
 
-
 require (
     go.mongodb.org/mongo-driver v1.9.1
 	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
@@ -27,7 +26,7 @@ require (
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
-	go.k6.io/k6 v0.38.3
+	go.k6.io/k6 v0.39.0
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898 // indirect
 	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29 // indirect
 	golang.org/x/text v0.3.7 // indirect
