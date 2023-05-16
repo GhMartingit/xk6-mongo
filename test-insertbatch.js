@@ -7,9 +7,9 @@ const batchsize = 50;
 
 export default () => {
 
-    var docobjs = []
+    let docobjs = []
 
-    for (var i = 0; i < batchsize; i++) {
+    for (let i = 0; i < batchsize; i++) {
         docobjs.push(getRecord());
     }
 
