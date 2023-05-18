@@ -153,6 +153,9 @@ func (c *Client) DeleteMany(database string, collection string, filter map[strin
 }
 
 func (c *Client) DropCollection(database string, collection string) error {
+    if VerifyITCollection(collection) != nil {
+        return errors.New("The name of your collection must begin with : test")
+    }
     log.Printf("Delete collection if present")
 	db := c.client.Database(database)
 	col := db.Collection(collection)
