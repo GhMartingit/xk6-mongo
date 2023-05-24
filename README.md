@@ -52,7 +52,8 @@ Using the `k6` binary with `xk6-mongo`, run the k6 test as usual:
 
 ```
 
-## Examples:
+## Examples: 
+
 ### Document Insertion Test
 ```js
 import xk6_mongo from 'k6/x/mongo';
@@ -73,3 +74,4 @@ export default ()=> {
 }
 
 ```
+

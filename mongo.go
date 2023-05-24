@@ -3,10 +3,9 @@ package xk6_mongo
 import (
 	"context"
 	"log"
-    "strings"
-    "errors"
+  "strings"
+  "errors"
 	"go.mongodb.org/mongo-driver/bson"
-
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -27,8 +26,6 @@ type Client struct {
 	client *mongo.Client
 }
 
-
-
 // NewClient represents the Client constructor (i.e. `new mongo.Client()`) and
 // returns a new Mongo client object.
 // connURI -> mongodb://username:password@address:port/db?connect=direct
@@ -39,9 +36,8 @@ func (*Mongo) NewClient(connURI string) interface{} {
 	if err != nil {
 		return err
 	}
+
 		return  &Client{client: client}
-
-
 }
 
 func VerifyITCollection(collection string) error {
@@ -68,6 +64,7 @@ func (c *Client) Insert(database string, collection string, doc map[string]strin
 	return nil
 }
 
+
 func (c *Client) InsertMany(database string, collection string, docs []any) error {
     if VerifyITCollection(collection) != nil {
         return errors.New("The name of your collection must begin with : test")
@@ -81,6 +78,7 @@ func (c *Client) InsertMany(database string, collection string, docs []any) erro
 	}
 	return nil
 }
+
 
 func (c *Client) Find(database string, collection string, filter interface{}) []bson.M{
 	db := c.client.Database(database)
@@ -165,3 +163,4 @@ func (c *Client) DropCollection(database string, collection string) error {
 	}
 	return nil
 }
+
