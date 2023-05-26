@@ -46,15 +46,13 @@ func VerifyITCollection(collection string) error {
       log.Printf("The collection name is as per the requirement.")
       return nil
    } else {
-       log.Printf("The collection name is invalid.")
-       return errors.New("The name of your collection must begin with : test")
+       log.Printf("The collection name is invalid. Must begin with : test")
+       return errors.New("The collection name is invalid. Must begin with : test")
    }
 }
 
 func (c *Client) Insert(database string, collection string, doc map[string]string) error {
-    if VerifyITCollection(collection) != nil {
-        return errors.New("The name of your collection must begin with : test")
-    }
+    VerifyITCollection(collection)
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.InsertOne(context.TODO(), doc)
@@ -66,10 +64,8 @@ func (c *Client) Insert(database string, collection string, doc map[string]strin
 
 
 func (c *Client) InsertMany(database string, collection string, docs []any) error {
-    if VerifyITCollection(collection) != nil {
-        return errors.New("The name of your collection must begin with : test")
-    }
     log.Printf("Insert multiple documents")
+    VerifyITCollection(collection)
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.InsertMany(context.TODO(), docs)
@@ -151,10 +147,8 @@ func (c *Client) DeleteMany(database string, collection string, filter map[strin
 }
 
 func (c *Client) DropCollection(database string, collection string) error {
-    if VerifyITCollection(collection) != nil {
-        return errors.New("The name of your collection must begin with : test")
-    }
     log.Printf("Delete collection if present")
+    VerifyITCollection(collection)
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	err := col.Drop(context.TODO())
