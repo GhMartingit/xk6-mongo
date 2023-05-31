@@ -40,19 +40,19 @@ func (*Mongo) NewClient(connURI string) interface{} {
 		return  &Client{client: client}
 }
 
-func VerifyITCollection(collection string) error {
+func VerifyCollectionPrefix(collection string, prefix string) error {
     log.Printf("Checking if collection name is as per requirement or not.")
     if strings.HasPrefix(collection, "test") == true {
       log.Printf("The collection name is as per the requirement.")
       return nil
    } else {
-       log.Printf("The collection name is invalid. Must begin with : test")
-       return errors.New("The collection name is invalid. Must begin with : test")
+       log.Printf("The collection name is invalid. Must begin with : " + prefix)
+       return errors.New("The collection name is invalid. Must begin with : " + prefix)
    }
 }
 
-func (c *Client) Insert(database string, collection string, doc map[string]string) error {
-    VerifyITCollection(collection)
+func (c *Client) Insert(database string, collection string, prefix string, doc map[string]string) error {
+    VerifyCollectionPrefix(collection,prefix)
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.InsertOne(context.TODO(), doc)
@@ -63,9 +63,9 @@ func (c *Client) Insert(database string, collection string, doc map[string]strin
 }
 
 
-func (c *Client) InsertMany(database string, collection string, docs []any) error {
+func (c *Client) InsertMany(database string, collection string, prefix string, docs []any) error {
     log.Printf("Insert multiple documents")
-    VerifyITCollection(collection)
+    VerifyCollectionPrefix(collection,prefix)
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.InsertMany(context.TODO(), docs)
@@ -146,9 +146,9 @@ func (c *Client) DeleteMany(database string, collection string, filter map[strin
 	return nil
 }
 
-func (c *Client) DropCollection(database string, collection string) error {
+func (c *Client) DropCollection(database string, collection string, prefix string) error {
     log.Printf("Delete collection if present")
-    VerifyITCollection(collection)
+    VerifyCollectionPrefix(collection,prefix)
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	err := col.Drop(context.TODO())
@@ -157,4 +157,3 @@ func (c *Client) DropCollection(database string, collection string) error {
 	}
 	return nil
 }
-
