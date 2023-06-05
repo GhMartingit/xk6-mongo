@@ -52,7 +52,6 @@ func VerifyCollectionPrefix(collection string, prefix string) error {
 }
 
 func (c *Client) Insert(database string, collection string, prefix string, doc map[string]string) error {
-    VerifyCollectionPrefix(collection,prefix)
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.InsertOne(context.TODO(), doc)
@@ -65,7 +64,6 @@ func (c *Client) Insert(database string, collection string, prefix string, doc m
 
 func (c *Client) InsertMany(database string, collection string, prefix string, docs []any) error {
     log.Printf("Insert multiple documents")
-    VerifyCollectionPrefix(collection,prefix)
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.InsertMany(context.TODO(), docs)
@@ -148,7 +146,6 @@ func (c *Client) DeleteMany(database string, collection string, filter map[strin
 
 func (c *Client) DropCollection(database string, collection string, prefix string) error {
     log.Printf("Delete collection if present")
-    VerifyCollectionPrefix(collection,prefix)
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	err := col.Drop(context.TODO())
