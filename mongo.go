@@ -40,17 +40,6 @@ func (*Mongo) NewClient(connURI string) interface{} {
 		return  &Client{client: client}
 }
 
-func VerifyCollectionPrefix(collection string, prefix string) error {
-    log.Printf("Checking if collection name is as per requirement or not.")
-    if strings.HasPrefix(collection, "test") == true {
-      log.Printf("The collection name is as per the requirement.")
-      return nil
-   } else {
-       log.Printf("The collection name is invalid. Must begin with : " + prefix)
-       return errors.New("The collection name is invalid. Must begin with : " + prefix)
-   }
-}
-
 func (c *Client) Insert(database string, collection string, prefix string, doc map[string]string) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
