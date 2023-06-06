@@ -2,9 +2,10 @@ package xk6_mongo
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson"
 	"log"
-
+  "strings"
+  "errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -35,11 +36,11 @@ func (*Mongo) NewClient(connURI string) interface{} {
 	if err != nil {
 		return err
 	}
-	return &Client{client: client}
 
+		return  &Client{client: client}
 }
 
-func (c *Client) Insert(database string, collection string, doc interface{}) error {
+func (c *Client) Insert(database string, collection string, doc map[string]string) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.InsertOne(context.TODO(), doc)
@@ -49,8 +50,9 @@ func (c *Client) Insert(database string, collection string, doc interface{}) err
 	return nil
 }
 
-func (c *Client) InsertBatch(database string, collection string, docs []any) error {
 
+func (c *Client) InsertMany(database string, collection string, docs []any) error {
+    log.Printf("Insert multiple documents")
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.InsertMany(context.TODO(), docs)
@@ -58,20 +60,17 @@ func (c *Client) InsertBatch(database string, collection string, docs []any) err
 		return err
 	}
 	return nil
-
 }
 
-func (c *Client) Find(database string, collection string, filter interface{}) []bson.M {
+
+func (c *Client) Find(database string, collection string, filter interface{}) []bson.M{
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-
 	log.Print("filter is ", filter)
 	cur, err := col.Find(context.TODO(), filter)
 	if err != nil {
 		log.Fatal(err)
-		// return nil
 	}
-
 	var results []bson.M
 	if err = cur.All(context.TODO(), &results); err != nil {
 		panic(err)
@@ -90,5 +89,57 @@ func (c *Client) FindOne(database string, collection string, filter map[string]s
 		log.Fatal(err)
 	}
 	log.Printf("found document %v", result)
+	return nil
+}
+
+func (c *Client) FindAll(database string, collection string) []bson.M{
+    log.Printf("Find all documents")
+	db := c.client.Database(database)
+	col := db.Collection(collection)
+	cur, err := col.Find(context.TODO(), bson.D{{}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	var results []bson.M
+	if err = cur.All(context.TODO(), &results); err != nil {
+		panic(err)
+	}
+	return results
+}
+
+func (c *Client) DeleteOne(database string, collection string, filter map[string]string) error {
+	db := c.client.Database(database)
+	col := db.Collection(collection)
+	opts := options.Delete().SetHint(bson.D{{"_id", 1}})
+	log.Print("filter is ", filter)
+	result, err := col.DeleteMany(context.TODO(), filter, opts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Deleted documents %v", result)
+	return nil
+}
+
+func (c *Client) DeleteMany(database string, collection string, filter map[string]string) error {
+	db := c.client.Database(database)
+	col := db.Collection(collection)
+	opts := options.Delete().SetHint(bson.D{{"_id", 1}})
+    log.Print("filter is ", filter)
+	result, err := col.DeleteMany(context.TODO(), filter, opts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Deleted documents %v", result)
+	return nil
+}
+
+func (c *Client) DropCollection(database string, collection string) error {
+    log.Printf("Delete collection if present")
+	db := c.client.Database(database)
+	col := db.Collection(collection)
+	err := col.Drop(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
 	return nil
 }
