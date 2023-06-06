@@ -1,4 +1,4 @@
-# CouchBase k6 extension
+# MongoDB k6 extension
 
 K6 extension to perform tests on mongo.
 
