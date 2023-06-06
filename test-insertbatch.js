@@ -13,7 +13,7 @@ export default () => {
         docobjs.push(getRecord());
     }
 
-    client.insertBatch("test", "test", docobjs);
+    client.insertMany("test", "test", docobjs);
 }
 
 function getRecord() {
