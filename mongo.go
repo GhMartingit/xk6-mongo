@@ -40,7 +40,7 @@ func (*Mongo) NewClient(connURI string) interface{} {
 		return  &Client{client: client}
 }
 
-func (c *Client) Insert(database string, collection string, prefix string, doc map[string]string) error {
+func (c *Client) Insert(database string, collection string, doc map[string]string) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.InsertOne(context.TODO(), doc)
@@ -51,7 +51,7 @@ func (c *Client) Insert(database string, collection string, prefix string, doc m
 }
 
 
-func (c *Client) InsertMany(database string, collection string, prefix string, docs []any) error {
+func (c *Client) InsertMany(database string, collection string, docs []any) error {
     log.Printf("Insert multiple documents")
 	db := c.client.Database(database)
 	col := db.Collection(collection)
@@ -133,7 +133,7 @@ func (c *Client) DeleteMany(database string, collection string, filter map[strin
 	return nil
 }
 
-func (c *Client) DropCollection(database string, collection string, prefix string) error {
+func (c *Client) DropCollection(database string, collection string) error {
     log.Printf("Delete collection if present")
 	db := c.client.Database(database)
 	col := db.Collection(collection)
