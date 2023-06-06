@@ -48,7 +48,7 @@ make build
 Using the `k6` binary with `xk6-mongo`, run the k6 test as usual:
 
 ```bash
-./k6 run k8s-test-script.js
+./k6 run test.js
 
 ```
 
