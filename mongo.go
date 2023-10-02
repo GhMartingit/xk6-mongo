@@ -36,9 +36,10 @@ func (*Mongo) NewClient(connURI string) interface{} {
 		return err
 	}
 
-		return  &Client{client: client}
+	return &Client{client: client}
 }
-const filter_is string  = "filter is ";
+
+const filter_is string = "filter is "
 
 func (c *Client) Insert(database string, collection string, doc map[string]string) error {
 	db := c.client.Database(database)
@@ -50,9 +51,8 @@ func (c *Client) Insert(database string, collection string, doc map[string]strin
 	return nil
 }
 
-
 func (c *Client) InsertMany(database string, collection string, docs []any) error {
-    log.Printf("Insert multiple documents")
+	log.Printf("Insert multiple documents")
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.InsertMany(context.TODO(), docs)
@@ -62,7 +62,7 @@ func (c *Client) InsertMany(database string, collection string, docs []any) erro
 	return nil
 }
 
-func (c *Client) Find(database string, collection string, filter interface{}, limit int64) []bson.M{
+func (c *Client) Find(database string, collection string, filter interface{}, limit int64) []bson.M {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	log.Print(filter_is, filter)
@@ -92,8 +92,8 @@ func (c *Client) FindOne(database string, collection string, filter map[string]s
 	return nil
 }
 
-func (c *Client) FindAll(database string, collection string) []bson.M{
-    log.Printf("Find all documents")
+func (c *Client) FindAll(database string, collection string) []bson.M {
+	log.Printf("Find all documents")
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	cur, err := col.Find(context.TODO(), bson.D{{}})
@@ -124,7 +124,7 @@ func (c *Client) DeleteMany(database string, collection string, filter map[strin
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	opts := options.Delete().SetHint(bson.D{{"_id", 1}})
-    log.Print(filter_is, filter)
+	log.Print(filter_is, filter)
 	result, err := col.DeleteMany(context.TODO(), filter, opts)
 	if err != nil {
 		log.Fatal(err)
@@ -134,7 +134,7 @@ func (c *Client) DeleteMany(database string, collection string, filter map[strin
 }
 
 func (c *Client) DropCollection(database string, collection string) error {
-    log.Printf("Delete collection if present")
+	log.Printf("Delete collection if present")
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	err := col.Drop(context.TODO())
