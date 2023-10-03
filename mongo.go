@@ -78,6 +78,21 @@ func (c *Client) Find(database string, collection string, filter interface{}, li
 	return results
 }
 
+func (c *Client) CountDocuments(database string, collection string, filter interface{}, limit int64) int64 {
+	db := c.client.Database(database)
+	col := db.Collection(collection)
+	log.Print(filter_is, filter)
+
+	cur, err := col.CountDocuments(context.TODO(), filter, options.Count().SetLimit(limit))
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err != nil {
+		panic(err)
+	}
+	return cur
+}
+
 func (c *Client) FindOne(database string, collection string, filter map[string]string) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
