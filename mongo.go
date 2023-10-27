@@ -49,8 +49,14 @@ func createOptions(opts map[string]any) Options {
 
 func toFindOptions(opts Options) *options.FindOptions {
 	opt := options.Find()
-	opt.SetLimit(opts.Limit)
-	opt.SetSkip(opts.Skip)
+
+	if opts.Limit > 0 {
+		opt.SetLimit(opts.Limit)
+	}
+	if opts.Skip > 0 {
+		opt.SetSkip(opts.Skip)
+	}
+
 	if opts.Sort != nil  {
 		opt.SetSort(opts.Sort)
 	}
@@ -59,8 +65,12 @@ func toFindOptions(opts Options) *options.FindOptions {
 
 func toCountOptions(opts Options) *options.CountOptions {
 	opt := options.Count()
-	opt.SetLimit(opts.Limit)
-	opt.SetSkip(opts.Skip)
+	if opts.Limit > 0 {
+		opt.SetLimit(opts.Limit)
+	}
+	if opts.Skip > 0 {
+		opt.SetSkip(opts.Skip)
+	}
 	return opt
 }
 
