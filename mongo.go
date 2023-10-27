@@ -25,6 +25,29 @@ type Client struct {
 	client *mongo.Client
 }
 
+type Options struct {
+	limit int64
+	skip int64
+	sort interface{}
+}
+
+func toFindOptions(opts Options) *options.FindOptions {
+	opt := options.Find()
+	opt.SetLimit(opts.limit)
+	opt.SetSkip(opts.skip)
+	if opts.sort != nil  {
+		opt.SetSort(opts.sort)
+	}
+	return opt
+}
+
+func toCountOptions(opts Options) *options.CountOptions {
+	opt := options.Count()
+	opt.SetLimit(opts.limit)
+	opt.SetSkip(opts.skip)
+	return opt
+}
+
 // NewClient represents the Client constructor (i.e. `new mongo.Client()`) and
 // returns a new Mongo client object.
 // connURI -> mongodb://username:password@address:port/db?connect=direct
@@ -62,12 +85,15 @@ func (c *Client) InsertMany(database string, collection string, docs []any) erro
 	return nil
 }
 
-func (c *Client) Find(database string, collection string, filter interface{}, limit int64) []bson.M {
+func (c *Client) Find(database string, collection string, filter interface{}, opts interface{}) []bson.M {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	log.Print(filter_is, filter)
 
-	cur, err := col.Find(context.TODO(), filter, options.Find().SetLimit(limit))
+	opt := toFindOptions(opts.(Options))
+	log.Printf("%+v", opt)
+
+	cur, err := col.Find(context.TODO(), filter, opt)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,12 +104,15 @@ func (c *Client) Find(database string, collection string, filter interface{}, li
 	return results
 }
 
-func (c *Client) CountDocuments(database string, collection string, filter interface{}, limit int64) int64 {
+func (c *Client) CountDocuments(database string, collection string, filter interface{}, opts interface{}) int64 {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	log.Print(filter_is, filter)
 
-	cur, err := col.CountDocuments(context.TODO(), filter, options.Count().SetLimit(limit))
+	opt := toCountOptions(opts.(Options))
+	log.Printf("%+v", opt)
+
+	cur, err := col.CountDocuments(context.TODO(), filter, opt)
 	if err != nil {
 		log.Fatal(err)
 	}
