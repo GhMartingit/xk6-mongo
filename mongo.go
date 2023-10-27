@@ -2,6 +2,8 @@ package xk6_mongo
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -26,25 +28,39 @@ type Client struct {
 }
 
 type Options struct {
-	limit int64
-	skip int64
-	sort interface{}
+	Limit int64 `json:"limit"`
+	Skip int64 `json:"skip"`
+	Sort interface{} `json:"sort"`
+}
+
+func createOptions(opts map[string]any) Options {
+	jsonStr, err := json.Marshal(opts)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    // Convert json string to struct
+    var opt Options
+    if err := json.Unmarshal(jsonStr, &opt); err != nil {
+        log.Println(err)
+    }
+	return opt
 }
 
 func toFindOptions(opts Options) *options.FindOptions {
 	opt := options.Find()
-	opt.SetLimit(opts.limit)
-	opt.SetSkip(opts.skip)
-	if opts.sort != nil  {
-		opt.SetSort(opts.sort)
+	opt.SetLimit(opts.Limit)
+	opt.SetSkip(opts.Skip)
+	if opts.Sort != nil  {
+		opt.SetSort(opts.Sort)
 	}
 	return opt
 }
 
 func toCountOptions(opts Options) *options.CountOptions {
 	opt := options.Count()
-	opt.SetLimit(opts.limit)
-	opt.SetSkip(opts.skip)
+	opt.SetLimit(opts.Limit)
+	opt.SetSkip(opts.Skip)
 	return opt
 }
 
@@ -85,12 +101,12 @@ func (c *Client) InsertMany(database string, collection string, docs []any) erro
 	return nil
 }
 
-func (c *Client) Find(database string, collection string, filter interface{}, opts interface{}) []bson.M {
+func (c *Client) Find(database string, collection string, filter interface{}, opts map[string]any) []bson.M {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	log.Print(filter_is, filter)
 
-	opt := toFindOptions(opts.(Options))
+	opt := toFindOptions(createOptions(opts))
 	log.Printf("%+v", opt)
 
 	cur, err := col.Find(context.TODO(), filter, opt)
@@ -104,12 +120,12 @@ func (c *Client) Find(database string, collection string, filter interface{}, op
 	return results
 }
 
-func (c *Client) CountDocuments(database string, collection string, filter interface{}, opts interface{}) int64 {
+func (c *Client) CountDocuments(database string, collection string, filter interface{}, opts map[string]any) int64 {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	log.Print(filter_is, filter)
 
-	opt := toCountOptions(opts.(Options))
+	opt := toCountOptions(createOptions(opts))
 	log.Printf("%+v", opt)
 
 	cur, err := col.CountDocuments(context.TODO(), filter, opt)
