@@ -61,10 +61,10 @@ func (c *Client) InsertMany(database string, collection string, docs []any) erro
 	return nil
 }
 
-func (c *Client) Find(database string, collection string, filter interface{}) []bson.M {
+func (c *Client) Find(database string, collection string, filter interface{}, sort interface{}, limit int64) []bson.M {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	opts := options.Find().SetSort(bson.D{{"timestamp", -1}}).SetLimit(1000)
+	opts := options.Find().SetSort(sort).SetLimit(limit)
 	log.Print(filter_is, filter)
 	cur, err := col.Find(context.TODO(), filter, opts)
 	if err != nil {
