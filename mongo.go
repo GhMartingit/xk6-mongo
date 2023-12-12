@@ -77,6 +77,21 @@ func (c *Client) Find(database string, collection string, filter interface{}, so
 	return results
 }
 
+func (c *Client) Aggregate(database string, collection string, pipeline interface{}) []bson.M {
+	db := c.client.Database(database)
+	col := db.Collection(collection)
+	log.Print(filter_is, pipeline)
+	cur, err := col.Aggregate(context.TODO(), pipeline)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var results []bson.M
+	if err = cur.All(context.TODO(), &results); err != nil {
+		panic(err)
+	}
+	return results
+}
+
 func (c *Client) FindOne(database string, collection string, filter map[string]string) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
