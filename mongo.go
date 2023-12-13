@@ -28,13 +28,16 @@ type Client struct {
 // returns a new Mongo client object.
 // connURI -> mongodb://username:password@address:port/db?connect=direct
 func (*Mongo) NewClient(connURI string) interface{} {
+	log.Print("start creating new client")
 
 	clientOptions := options.Client().ApplyURI(connURI)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
+		log.Print(err)
 		return err
 	}
 
+	log.Print("created new client")
 	return &Client{client: client}
 }
 
