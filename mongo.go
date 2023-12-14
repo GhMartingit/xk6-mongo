@@ -64,6 +64,17 @@ func (c *Client) InsertMany(database string, collection string, docs []any) erro
 	return nil
 }
 
+func (c *Client) Upsert(database string, collection string, filter interface{}, upsert interface{}) error {
+	db := c.client.Database(database)
+	col := db.Collection(collection)
+	opts := options.Update().SetUpsert(true)
+	_, err := col.UpdateOne(context.TODO(), filter, upsert, opts)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c *Client) Find(database string, collection string, filter interface{}, sort interface{}, limit int64) []bson.M {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
