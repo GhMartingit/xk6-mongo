@@ -171,3 +171,11 @@ func (c *Client) DropCollection(database string, collection string) error {
 	}
 	return nil
 }
+
+func (c *Client) Disconnect() {
+	log.Printf("Disconnecting from Mongo database")
+	err := c.client.Disconnect(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+}
