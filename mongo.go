@@ -24,6 +24,11 @@ type Client struct {
 	client *mongo.Client
 }
 
+type UpsertOneModel struct {
+	Query  interface{} `json:"query"`
+	Update interface{} `json:"update"`
+}
+
 // NewClient represents the Client constructor (i.e. `new mongo.Client()`) and
 // returns a new Mongo client object.
 // connURI -> mongodb://username:password@address:port/db?connect=direct
@@ -71,6 +76,24 @@ func (c *Client) Upsert(database string, collection string, filter interface{}, 
 	_, err := col.UpdateOne(context.TODO(), filter, upsert, opts)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (c *Client) BulkUpsert(database string, collection string, upserts []UpsertOneModel) error {
+	db := c.client.Database(database)
+	col := db.Collection(collection)
+	var models []mongo.WriteModel
+	for _, upsert := range upserts {
+		model := mongo.NewUpdateOneModel()
+		model.SetFilter(upsert.Query)
+		model.SetUpdate(upsert.Update)
+		model.SetUpsert(true)
+		models = append(models, model)
+	}
+	_, err := col.BulkWrite(context.TODO(), models)
+	if err != nil {
+		log.Fatal(err)
 	}
 	return nil
 }
