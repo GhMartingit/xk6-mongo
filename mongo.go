@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"log/slog"
 
 	k6modules "go.k6.io/k6/js/modules"
 )
@@ -38,7 +39,7 @@ func (*Mongo) NewClient(connURI string) interface{} {
 	clientOptions := options.Client().ApplyURI(connURI)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		log.Print(err)
+		slog.Error(err.Error())
 		return err
 	}
 
@@ -53,6 +54,7 @@ func (c *Client) Insert(database string, collection string, doc map[string]strin
 	col := db.Collection(collection)
 	_, err := col.InsertOne(context.TODO(), doc)
 	if err != nil {
+		slog.Error(err.Error())
 		return err
 	}
 	return nil
@@ -64,6 +66,7 @@ func (c *Client) InsertMany(database string, collection string, docs []any) erro
 	col := db.Collection(collection)
 	_, err := col.InsertMany(context.TODO(), docs)
 	if err != nil {
+		slog.Error(err.Error())
 		return err
 	}
 	return nil
@@ -75,7 +78,7 @@ func (c *Client) Upsert(database string, collection string, filter interface{}, 
 	opts := options.Update().SetUpsert(true)
 	_, err := col.UpdateOne(context.TODO(), filter, upsert, opts)
 	if err != nil {
-		return err
+		slog.Error(err.Error())
 	}
 	return nil
 }
@@ -93,7 +96,7 @@ func (c *Client) BulkUpsert(database string, collection string, upserts []Upsert
 	}
 	_, err := col.BulkWrite(context.TODO(), models)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 	return nil
 }
@@ -105,11 +108,11 @@ func (c *Client) Find(database string, collection string, filter interface{}, so
 	log.Print(filter_is, filter)
 	cur, err := col.Find(context.TODO(), filter, opts)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 	var results []bson.M
 	if err = cur.All(context.TODO(), &results); err != nil {
-		panic(err)
+		slog.Error(err.Error())
 	}
 	return results
 }
@@ -120,11 +123,11 @@ func (c *Client) Aggregate(database string, collection string, pipeline interfac
 	log.Print(filter_is, pipeline)
 	cur, err := col.Aggregate(context.TODO(), pipeline)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 	var results []bson.M
 	if err = cur.All(context.TODO(), &results); err != nil {
-		panic(err)
+		slog.Error(err.Error())
 	}
 	return results
 }
@@ -137,7 +140,7 @@ func (c *Client) FindOne(database string, collection string, filter map[string]s
 	log.Print(filter_is, filter)
 	err := col.FindOne(context.TODO(), filter, opts).Decode(&result)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 	log.Printf("found document %v", result)
 	return nil
@@ -149,11 +152,11 @@ func (c *Client) FindAll(database string, collection string) []bson.M {
 	col := db.Collection(collection)
 	cur, err := col.Find(context.TODO(), bson.D{{}})
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 	var results []bson.M
 	if err = cur.All(context.TODO(), &results); err != nil {
-		panic(err)
+		slog.Error(err.Error())
 	}
 	return results
 }
@@ -165,7 +168,7 @@ func (c *Client) DeleteOne(database string, collection string, filter map[string
 	log.Print(filter_is, filter)
 	result, err := col.DeleteOne(context.TODO(), filter, opts)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 	log.Printf("Deleted documents %v", result)
 	return nil
@@ -178,7 +181,7 @@ func (c *Client) DeleteMany(database string, collection string, filter map[strin
 	log.Print(filter_is, filter)
 	result, err := col.DeleteMany(context.TODO(), filter, opts)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 	log.Printf("Deleted documents %v", result)
 	return nil
@@ -189,7 +192,7 @@ func (c *Client) Distinct(database string, collection string, field string, filt
 	col := db.Collection(collection)
 	results, err := col.Distinct(context.TODO(), field, filter)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 
 	return results
@@ -201,7 +204,7 @@ func (c *Client) DropCollection(database string, collection string) error {
 	col := db.Collection(collection)
 	err := col.Drop(context.TODO())
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 	return nil
 }
@@ -210,6 +213,6 @@ func (c *Client) Disconnect() {
 	log.Printf("Disconnecting from Mongo database")
 	err := c.client.Disconnect(context.TODO())
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 }
