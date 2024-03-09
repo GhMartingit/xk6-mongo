@@ -1,4 +1,4 @@
-module github.com/AlexKunde/xk6-mongo
+module github.com/alexkunde/xk6-mongo
 
 go 1.22
 
