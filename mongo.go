@@ -3,18 +3,19 @@ package xk6_mongo
 import (
 	"context"
 	"log"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	k6modules "go.k6.io/k6/js/modules"
+	"go.k6.io/k6/js/modules"
 )
 
 // Register the extension on module initialization, available to
 // import from JS as "k6/x/mongo".
 func init() {
-	k6modules.Register("k6/x/mongo", new(Mongo))
+	modules.Register("k6/x/mongo", new(Mongo))
 }
 
 // Mongo is the k6 extension for a Mongo client.
@@ -27,12 +28,19 @@ type Client struct {
 
 // NewClient represents the Client constructor (i.e. `new mongo.Client()`) and
 // returns a new Mongo client object.
+// The `connURI` parameter in the `NewClient` function is used to specify the connection URI for the
+// MongoDB client. It typically follows the format
+// `mongodb://username:password@address:port/db?connect=direct`. This URI contains information such
+// as the username, password, address, port, database name, and connection options.
 // connURI -> mongodb://username:password@address:port/db?connect=direct
+// connURI -> mongodb+srv://username:password@address:port/db?authSource=admin
 func (*Mongo) NewClient(connURI string) interface{} {
 
 	clientOptions := options.Client().ApplyURI(connURI)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
+		log.Printf("Error on Connection")
+		log.Printf("%+v", err)
 		return err
 	}
 
@@ -165,4 +173,11 @@ func (c *Client) DropCollection(database string, collection string) error {
 		log.Fatal(err)
 	}
 	return nil
+}
+
+func (*Mongo) MongoEncode(input string) string {
+	// https://www.mongodb.com/docs/manual/reference/connection-string/
+	r := strings.NewReplacer("%", "%25", "$", "%24", ":", "%3A", "/", "%2F", "?", "%3F", "#", "%23", "[", "%5B", "]", "%5D", "@", "%40")
+	res := r.Replace(input)
+	return res
 }

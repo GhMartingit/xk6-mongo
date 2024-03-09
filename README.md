@@ -13,6 +13,7 @@ K6 extension to perform tests on mongo.
 - Supports dropping a collection.
 
 # xk6-mongo
+
 A k6 extension for interacting with mongoDb while testing.
 
 ## Build
@@ -31,16 +32,17 @@ To build a custom `k6` binary with this extension, first ensure you have the pre
 2. [Build the k6 binary](https://github.com/grafana/xk6#command-usage):
 
     ```bash
-    xk6 build --with  github.com/GhMartingit/xk6-mongo
+    xk6 build --with  github.com/AlexKunde/xk6-mongo
     ```
 
    This will create a k6 binary that includes the xk6-mongo extension in your local folder. This k6 binary can now run a k6 test.
 
 ### Development
+
 To make development a little smoother, use the `Makefile` in the root folder. The default target will format your code, run tests, and create a `k6` binary with your local code rather than from GitHub.
 
 ```shell
-git clone git@github.com/GhMartingit/xk6-mongo.git
+git clone git@github.com/AlexKunde/xk6-mongo.git
 cd xk6-mongo
 make build
 ```
@@ -52,9 +54,26 @@ Using the `k6` binary with `xk6-mongo`, run the k6 test as usual:
 
 ```
 
-## Examples: 
+## Examples
+
+### Connections
+
+```js
+import xk6_mongo from 'k6/x/mongo';
+
+const mongodb_escaped_password = xk6_mongo.mongoEncode('All@Special%%And$$Cool');
+const mongodb_escaped_user = xk6_mongo.mongoEncode('Also$%special');
+// SRV Connection
+const mongodb_connection_string = `mongodb+srv://${mongodb_escaped_user}:${mongodb_escaped_password}@localhost:27017/db?authSource=admin`;
+const client = xk6_mongo.newClient(mongodb_connection_string);
+
+// Direct Connection
+const mongodb_connection_string = `mongodb://${mongodb_escaped_user}:${mongodb_escaped_password}@localhost:27017/db?connect=direct`;
+const client = xk6_mongo.newClient(mongodb_connection_string);
+```
 
 ### Document Insertion Test
+
 ```js
 import xk6_mongo from 'k6/x/mongo';
 
@@ -74,4 +93,3 @@ export default ()=> {
 }
 
 ```
-
