@@ -85,22 +85,30 @@ func (c *Client) Find(database string, collection string, filter interface{}) []
 	return results
 }
 
-func (c *Client) FindOne(database string, collection string, filter map[string]string) error {
+func (c *Client) FindOne(database string, collection string, filter string) bson.M {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
+	log.Printf("MongoDB Query is %+v", filter)
+
+	var bson_filter bson.D
+	err := bson.UnmarshalExtJSON([]byte(strings.TrimSpace(filter)), true, &bson_filter)
+	if err != nil {
+		log.Printf("%+v", err)
+		return nil
+	}
+
 	var result bson.M
 	opts := options.FindOne().SetSort(bson.D{{"_id", 1}})
-	log.Print(filter_is, filter)
-	err := col.FindOne(context.TODO(), filter, opts).Decode(&result)
+	err = col.FindOne(context.TODO(), bson_filter, opts).Decode(&result)
 	if err == mongo.ErrNoDocuments {
 		log.Printf("No document was found for filter %v", filter)
 		return nil
 	}
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("%+v", err)
+		return nil
 	}
-	log.Printf("found document %v", result)
-	return nil
+	return result
 }
 
 func (c *Client) UpdateOne(database string, collection string, filter interface{}, data map[string]string) error {

@@ -72,13 +72,34 @@ const mongodb_connection_string = `mongodb://${mongodb_escaped_user}:${mongodb_e
 const client = xk6_mongo.newClient(mongodb_connection_string);
 ```
 
+### Retrieve Document
+
+```js
+import xk6_mongo from 'k6/x/mongo';
+
+const mongodb_escaped_password = xk6_mongo.mongoEncode('All@Special%%And$$Cool');
+const mongodb_escaped_user = xk6_mongo.mongoEncode('Also$%special');
+const mongodb_connection_string = `mongodb://${mongodb_escaped_user}:${mongodb_escaped_password}@localhost:27017/db?connect=direct`;
+const client = xk6_mongo.newClient(mongodb_connection_string);
+
+export default ()=> {
+    // json will be parsed to bson.D - for what is possible please google
+    // if you like to help with examples, I'd be very happy
+    let myDoc = client.findOne('database', 'collection', '{"correlationId": "test--mongodb"}');
+    // result will be an object, so you can do stuff like
+    let myTitle = MyDoc.title;
+}
+```
+
 ### Document Insertion Test
 
 ```js
 import xk6_mongo from 'k6/x/mongo';
 
+const mongodb_escaped_password = xk6_mongo.mongoEncode('All@Special%%And$$Cool');
+const mongodb_escaped_user = xk6_mongo.mongoEncode('Also$%special');
+const mongodb_connection_string = `mongodb://${mongodb_escaped_user}:${mongodb_escaped_password}@localhost:27017/db?connect=direct`;
 
-const client = xk6_mongo.newClient('mongodb://localhost:27017');
 export default ()=> {
 
     let doc = {
