@@ -8,6 +8,10 @@ K6 extension to perform tests on mongo.
 - Supports inserting document batch.
 - Supports find a document based on filter.
 - Supports find all documents of a collection.
+- Supports upserting a document based on filter.
+- Supports bulk upserting documents based on filters.
+- Supports aggregation pipelines.
+- Supports finding distinct values for a field in a collection based on a filter.
 - Supports delete first document based on filter.
 - Supports deleting all documents for a specific filter.
 - Supports dropping a collection.
