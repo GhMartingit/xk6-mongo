@@ -113,7 +113,7 @@ export default ()=> {
         locale: 'en',
         time: `${new Date(Date.now()).toISOString()}`
     };
-    client.insert("testdb", "testcollection", doc);
+    client.insert("testdb", "testcollection", JSON.stringify(doc));
 }
 
 ```
