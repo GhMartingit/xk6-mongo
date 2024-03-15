@@ -106,10 +106,13 @@ export default ()=> {
         correlationId: `test--mongodb`,
         title: 'Perf test experiment',
         url: 'example.com',
+        requestId: {
+            // this way you can define the type of requestId - in this case Int64
+            $numberLong: "12345"
+        },
         locale: 'en',
         time: `${new Date(Date.now()).toISOString()}`
     };
-
     client.insert("testdb", "testcollection", doc);
 }
 

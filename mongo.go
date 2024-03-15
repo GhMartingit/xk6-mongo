@@ -49,10 +49,16 @@ func (*Mongo) NewClient(connURI string) interface{} {
 
 const filter_is string = "filter is "
 
-func (c *Client) Insert(database string, collection string, doc map[string]string) error {
+func (c *Client) Insert(database string, collection string, doc string) error {
+	var bson_doc bson.D
+	err := bson.UnmarshalExtJSON([]byte(strings.TrimSpace(doc)), true, &bson_doc)
+	if err != nil {
+		log.Printf("%+v", err)
+		return nil
+	}
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	_, err := col.InsertOne(context.TODO(), doc)
+	_, err = col.InsertOne(context.TODO(), bson_doc)
 	if err != nil {
 		return err
 	}
