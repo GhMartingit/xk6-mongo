@@ -49,17 +49,20 @@ func (*Mongo) NewClient(connURI string) interface{} {
 
 const filter_is string = "filter is "
 
-func (c *Client) Insert(database string, collection string, doc string) error {
-	var bson_doc bson.D
-	err := bson.UnmarshalExtJSON([]byte(strings.TrimSpace(doc)), true, &bson_doc)
-	if err != nil {
-		log.Printf("%+v", err)
-		return nil
-	}
+func (c *Client) InsertOne(database string, collection string, doc string) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	_, err = col.InsertOne(context.TODO(), bson_doc)
+
+	var bson_doc bson.D
+	bson_err := bson.UnmarshalExtJSON([]byte(strings.TrimSpace(doc)), true, &bson_doc)
+	if bson_err != nil {
+		log.Printf("UnmarshalExtJSON: %+v", bson_err)
+		return nil
+	}
+
+	_, err := col.InsertOne(context.TODO(), bson_doc)
 	if err != nil {
+		log.Printf("InsertOne: %+v", err)
 		return err
 	}
 	return nil
@@ -76,11 +79,24 @@ func (c *Client) InsertMany(database string, collection string, docs []any) erro
 	return nil
 }
 
-func (c *Client) Find(database string, collection string, filter interface{}) []bson.M {
+func (c *Client) FindMany(database string, collection string, filter string) []bson.M {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	log.Print(filter_is, filter)
-	cur, err := col.Find(context.TODO(), filter)
+
+	var bson_filter bson.D
+	if filter != "" {
+		log.Printf("MongoDB Query is %+v", filter)
+		bson_err := bson.UnmarshalExtJSON([]byte(strings.TrimSpace(filter)), true, &bson_filter)
+		if bson_err != nil {
+			log.Printf("%+v", bson_err)
+			return nil
+		}
+	} else {
+		log.Printf("Getting all Elements from Collection")
+		bson_filter = bson.D{}
+	}
+
+	cur, err := col.Find(context.TODO(), bson_filter)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -99,7 +115,7 @@ func (c *Client) FindOne(database string, collection string, filter string) bson
 	var bson_filter bson.D
 	err := bson.UnmarshalExtJSON([]byte(strings.TrimSpace(filter)), true, &bson_filter)
 	if err != nil {
-		log.Printf("%+v", err)
+		log.Printf("UnmarshalExtJSON: %+v", err)
 		return nil
 	}
 
@@ -111,7 +127,7 @@ func (c *Client) FindOne(database string, collection string, filter string) bson
 		return nil
 	}
 	if err != nil {
-		log.Printf("%+v", err)
+		log.Printf("FindOne: %+v", err)
 		return nil
 	}
 	return result

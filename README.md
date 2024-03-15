@@ -7,6 +7,7 @@ K6 extension to perform tests on mongo.
 - Supports inserting a document.
 - Supports inserting document batch.
 - Supports find a document based on filter.
+- Supports find many documents based on filter.
 - Supports find all documents of a collection.
 - Supports delete first document based on filter.
 - Supports deleting all documents for a specific filter.
@@ -72,34 +73,37 @@ const mongodb_connection_string = `mongodb://${mongodb_escaped_user}:${mongodb_e
 const client = xk6_mongo.newClient(mongodb_connection_string);
 ```
 
-### Retrieve Document
+### Retrieve One Document
 
 ```js
-import xk6_mongo from 'k6/x/mongo';
-
-const mongodb_escaped_password = xk6_mongo.mongoEncode('All@Special%%And$$Cool');
-const mongodb_escaped_user = xk6_mongo.mongoEncode('Also$%special');
-const mongodb_connection_string = `mongodb://${mongodb_escaped_user}:${mongodb_escaped_password}@localhost:27017/db?connect=direct`;
-const client = xk6_mongo.newClient(mongodb_connection_string);
-
 export default ()=> {
     // json will be parsed to bson.D - for what is possible please google
     // if you like to help with examples, I'd be very happy
     let myDoc = client.findOne('database', 'collection', '{"correlationId": "test--mongodb"}');
+    // multiple conditions (AND)
+    let myDoc = client.findOne('database', 'collection', '{"cond1": "a", "condb": "b"}');
     // result will be an object, so you can do stuff like
     let myTitle = MyDoc.title;
 }
 ```
 
-### Document Insertion Test
+### Retrieve Multiple Documents
 
 ```js
-import xk6_mongo from 'k6/x/mongo';
+export default ()=> {
+    // json will be parsed to bson.D - for what is possible please google
+    // if you like to help with examples, I'd be very happy
+    let myDocs = client.findMany('database', 'collection', '{"correlationId": "test--mongodb"}');
+    // give back all documents of the collection
+    let myDocs = client.findMany('database', 'collection', '');
+    // result will be an array of objects, so you can do stuff like
+    let myTitle = MyDocs[0].title;
+}
+```
 
-const mongodb_escaped_password = xk6_mongo.mongoEncode('All@Special%%And$$Cool');
-const mongodb_escaped_user = xk6_mongo.mongoEncode('Also$%special');
-const mongodb_connection_string = `mongodb://${mongodb_escaped_user}:${mongodb_escaped_password}@localhost:27017/db?connect=direct`;
+### Insert One Document
 
+```js
 export default ()=> {
 
     let doc = {
@@ -113,7 +117,7 @@ export default ()=> {
         locale: 'en',
         time: `${new Date(Date.now()).toISOString()}`
     };
-    client.insert("testdb", "testcollection", JSON.stringify(doc));
+    client.insertOne("testdb", "testcollection", JSON.stringify(doc));
 }
 
 ```
