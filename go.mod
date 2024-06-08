@@ -1,10 +1,10 @@
 module github.com/GhMartingit/xk6-mongo
 
-go 1.19
+go 1.22
 
 require (
-	go.k6.io/k6 v0.45.1
-	go.mongodb.org/mongo-driver v1.13.1
+	go.k6.io/k6 v0.51.0
+	go.mongodb.org/mongo-driver v1.15.0
 )
 
 require (
