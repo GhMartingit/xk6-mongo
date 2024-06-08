@@ -6,9 +6,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
-	"log/slog"
 
-	k6modules "go.k6.io/k6/js/modules"
+	k6modules  "go.k6.io/k6/js/modules"
+
 )
 
 // Register the extension on module initialization, available to
@@ -33,40 +33,38 @@ type UpsertOneModel struct {
 // NewClient represents the Client constructor (i.e. `new mongo.Client()`) and
 // returns a new Mongo client object.
 // connURI -> mongodb://username:password@address:port/db?connect=direct
-func (*Mongo) NewClient(connURI string) interface{} {
+func (*Mongo) NewClient(connURI string) *Client {
 	log.Print("start creating new client")
 
 	clientOptions := options.Client().ApplyURI(connURI)
-	client, err := mongo.Connect(context.TODO(), clientOptions)
+	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
-		slog.Error(err.Error())
-		return err
+		log.Printf("Error while establishing a connection to MongoDB: %v", err)
+		return nil
 	}
 
 	log.Print("created new client")
 	return &Client{client: client}
 }
 
-const filter_is string = "filter is "
-
 func (c *Client) Insert(database string, collection string, doc interface{}) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	_, err := col.InsertOne(context.TODO(), doc)
+	_, err := col.InsertOne(context.Background(), doc)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Printf("Error while inserting document: %v", err)
 		return err
 	}
+	log.Print("Document inserted successfully")
 	return nil
 }
 
-func (c *Client) InsertMany(database string, collection string, docs []any) error {
-	log.Printf("Insert multiple documents")
+func (c *Client) InsertMany(database string, collection string, docs []interface{}) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	_, err := col.InsertMany(context.TODO(), docs)
+	_, err := col.InsertMany(context.Background(), docs)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Printf("Error while inserting multiple documents: %v", err)
 		return err
 	}
 	return nil
@@ -76,165 +74,183 @@ func (c *Client) Upsert(database string, collection string, filter interface{}, 
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	opts := options.Update().SetUpsert(true)
-	_, err := col.UpdateOne(context.TODO(), filter, upsert, opts)
+	_, err := col.UpdateOne(context.Background(), filter, upsert, opts)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Printf("Error while performing upsert: %v", err)
+		return err
 	}
 	return nil
 }
 
-func (c *Client) BulkUpsert(database string, collection string, upserts []UpsertOneModel) error {
-	db := c.client.Database(database)
-	col := db.Collection(collection)
-	var models []mongo.WriteModel
-	for _, upsert := range upserts {
-		model := mongo.NewUpdateOneModel()
-		model.SetFilter(upsert.Query)
-		model.SetUpdate(upsert.Update)
-		model.SetUpsert(true)
-		models = append(models, model)
-	}
-	_, err := col.BulkWrite(context.TODO(), models)
-	if err != nil {
-		slog.Error(err.Error())
-	}
-	return nil
-}
-
-func (c *Client) Find(database string, collection string, filter interface{}, sort interface{}, limit int64) []bson.M {
+func (c *Client) Find(database string, collection string, filter interface{}, sort interface{}, limit int64) ([]bson.M, error) {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	opts := options.Find().SetSort(sort).SetLimit(limit)
-	log.Print(filter_is, filter)
-	cur, err := col.Find(context.TODO(), filter, opts)
+	cur, err := col.Find(context.Background(), filter, opts)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Printf("Error while finding documents: %v", err)
+		return nil, err
 	}
 	var results []bson.M
-	if err = cur.All(context.TODO(), &results); err != nil {
-		slog.Error(err.Error())
+	if err = cur.All(context.Background(), &results); err != nil {
+		log.Printf("Error while decoding documents: %v", err)
+		return nil, err
 	}
-	return results
+	return results, nil
 }
 
-func (c *Client) Aggregate(database string, collection string, pipeline interface{}) []bson.M {
+func (c *Client) Aggregate(database string, collection string, pipeline interface{}) ([]bson.M, error) {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	log.Print(filter_is, pipeline)
-	cur, err := col.Aggregate(context.TODO(), pipeline)
+	cur, err := col.Aggregate(context.Background(), pipeline)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Printf("Error while aggregating: %v", err)
+		return nil, err
 	}
 	var results []bson.M
-	if err = cur.All(context.TODO(), &results); err != nil {
-		slog.Error(err.Error())
+	if err = cur.All(context.Background(), &results); err != nil {
+		log.Printf("Error while decoding documents: %v", err)
+		return nil, err
 	}
-	return results
+	return results, nil
 }
 
-func (c *Client) FindOne(database string, collection string, filter map[string]string) error {
+func (c *Client) FindOne(database string, collection string, filter map[string]string) (bson.M, error) {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	var result bson.M
-	opts := options.FindOne().SetSort(bson.D{{"_id", 1}})
-	log.Print(filter_is, filter)
-	err := col.FindOne(context.TODO(), filter, opts).Decode(&result)
-	if err == mongo.ErrNoDocuments {
-		log.Printf("No document was found for filter %v", filter)
-		return nil
-	}
+	err := col.FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Printf("Error while finding the document: %v", err)
+		return nil, err
 	}
-	log.Printf("found document %v", result)
+
+	return result, nil
+}
+
+func (c *Client) UpdateOne(database string, collection string, filter interface{}, data bson.D) error {
+	db := c.client.Database(database)
+	col := db.Collection(collection)
+
+	_, err := col.UpdateOne(context.Background(), filter, data)
+	if err != nil {
+		log.Printf("Error while updating the document: %v", err)
+		return err
+	}
+
 	return nil
 }
 
-func (c *Client) UpdateOne(database string, collection string, filter interface{}, data map[string]string) error {
-	// var result bson.M
+func (c *Client) UpdateMany(database string, collection string, filter interface{}, data bson.D) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
+
 	update := bson.D{{"$set", data}}
-	result, err := col.UpdateOne(context.TODO(), filter, update)
+	
+	_, err := col.UpdateMany(context.Background(), filter, update)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error while updating the documents: %v", err)
+		return err
 	}
 
-	// opts := options.FindOne().SetSort(bson.D{{"_id", 1}})
-	// err = col.FindOne(context.TODO(), filter, opts).Decode(&result)
-	// if err == mongo.ErrNoDocuments {
-	// 	log.Printf("No document was found for filter %v", filter)
-	// 	return nil
-	// }
-	log.Printf("found document %v", result)
 	return nil
 }
 
-func (c *Client) FindAll(database string, collection string) []bson.M {
-	log.Printf("Find all documents")
+func (c *Client) FindAll(database string, collection string) ([]bson.M, error) {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	cur, err := col.Find(context.TODO(), bson.D{{}})
+	cur, err := col.Find(context.Background(), bson.D{{}})
 	if err != nil {
-		slog.Error(err.Error())
+		log.Printf("Error while finding documents: %v", err)
+		return nil, err
 	}
+	
 	var results []bson.M
-	if err = cur.All(context.TODO(), &results); err != nil {
-		slog.Error(err.Error())
+	if err = cur.All(context.Background(), &results); err != nil {
+		log.Printf("Error while decoding documents: %v", err)
+		return nil, err
 	}
-	return results
+
+	return results, nil
 }
 
 func (c *Client) DeleteOne(database string, collection string, filter map[string]string) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	log.Print(filter_is, filter)
-	result, err := col.DeleteOne(context.TODO(), filter)
+	_, err := col.DeleteOne(context.Background(), filter)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Printf("Error while deleting the document: %v", err)
+		return err
 	}
-	log.Printf("Deleted documents %v", result)
+
 	return nil
 }
 
 func (c *Client) DeleteMany(database string, collection string, filter map[string]string) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	log.Print(filter_is, filter)
-	result, err := col.DeleteMany(context.TODO(), filter)
+	_, err := col.DeleteMany(context.Background(), filter)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Printf("Error while deleting the documents: %v", err)
+		return err
 	}
-	log.Printf("Deleted documents %v", result)
+
 	return nil
 }
 
-func (c *Client) Distinct(database string, collection string, field string, filter interface{}) []interface{} {
+func (c *Client) Distinct(database string, collection string, field string, filter interface{}) ([]interface{}, error) {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	results, err := col.Distinct(context.TODO(), field, filter)
+	result, err := col.Distinct(context.Background(), field, filter)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Printf("Error while getting distinct values: %v", err)
+		return nil, err
 	}
 
-	return results
+	return result, nil
 }
 
 func (c *Client) DropCollection(database string, collection string) error {
-	log.Printf("Delete collection if present")
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	err := col.Drop(context.TODO())
+	err := col.Drop(context.Background())
 	if err != nil {
-		slog.Error(err.Error())
+		log.Printf("Error while dropping the collection: %v", err)
+		return err
 	}
+
 	return nil
 }
 
-func (c *Client) Disconnect() {
-	log.Printf("Disconnecting from Mongo database")
-	err := c.client.Disconnect(context.TODO())
+func (c *Client) CountDocuments(database string, collection string, filter interface{}) (int64, error) {
+	db := c.client.Database(database)
+	col := db.Collection(collection)
+	count, err := col.CountDocuments(context.Background(), filter)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Printf("Error while counting documents: %v", err)
+		return 0, err
 	}
+	return count, nil
+}
+
+func (c *Client) FindOneAndUpdate(database string, collection string, filter interface{}, update interface{}) (*mongo.SingleResult, error) {
+	db := c.client.Database(database)
+	col := db.Collection(collection)
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+	result := col.FindOneAndUpdate(context.Background(), filter, update, opts)
+	if result.Err() != nil {
+		log.Printf("Error while finding and updating document: %v", result.Err())
+		return nil, result.Err()
+	}
+	return result, nil
+}
+
+func (c *Client) Disconnect() error {
+	err := c.client.Disconnect(context.Background())
+	if err != nil {
+		log.Printf("Error while disconnecting from the database: %v", err)
+		return err
+	}
+
+	return nil
 }
