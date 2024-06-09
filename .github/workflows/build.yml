@@ -21,6 +21,7 @@ jobs:
           platform: linux/amd64 windows/amd64 darwin/amd64
           with: |
             github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
+            
       - name: Install Go 🧑‍💻
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
         uses: actions/setup-go@v3
@@ -32,6 +33,7 @@ jobs:
 
       - name: Install SPDX tool
         run: go install github.com/spdx/tools-golang/bom/cmd/rdf2v1@latest
+
 
       - name: Generate SBOM
         run: rdf2v1 -format tagvalue go.list > sbom.spdx
