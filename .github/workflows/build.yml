@@ -10,42 +10,51 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          fetch-depth: -1
+          fetch-depth: 0
 
-      - name: Build 🏗️
-        id: build
-        uses: szkiba/xk6bundler@v0
-        with:
-          platform: linux/amd64 windows/amd64 darwin/amd64
-          with: |
-            github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
-            
       - name: Install Go 🧑‍💻
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: "1.22"
 
-      - name: Generate dependencies list
-        run: go list -m all > go.list
-
-      - name: Install SPDX tool
-        run: go install github.com/spdx/tools-golang/bom/cmd/rdf2v1@latest
-
-
-      - name: Generate SBOM
-        run: rdf2v1 -format tagvalue go.list > sbom.spdx
-
-      - name: Upload SPDX SBOM artifact for go.mod 💾
+      - name: Install xk6 and build xk6-mongo for different platforms 🏗️
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-        uses: actions/upload-artifact@v3
-        with:
-          name: sbom.spdx
-          path: sbom.spdx
+        run: |
+          mkdir dist
+          go install go.k6.io/xk6/cmd/xk6@latest
+          # ------------------------- Linux amd64 -------------------------
+          GOOS=linux GOARCH=amd64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_linux_amd64 --with github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
+          tar cvzf dist/xk6-mongo_${{ github.ref_name }}_linux_amd64.tar.gz dist/xk6-mongo_${{ github.ref_name }}_linux_amd64
+          # ------------------------- Linux arm64 -------------------------
+          GOOS=linux GOARCH=arm64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_linux_arm64 --with github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
+          tar cvzf dist/xk6-mongo_${{ github.ref_name }}_linux_arm64.tar.gz dist/xk6-mongo_${{ github.ref_name }}_linux_arm64
+          # ------------------------- macOS amd64 -------------------------
+          GOOS=darwin GOARCH=amd64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_darwin_amd64 --with github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
+          tar cvzf dist/xk6-mongo_${{ github.ref_name }}_darwin_amd64.tar.gz dist/xk6-mongo_${{ github.ref_name }}_darwin_amd64
+          # ------------------------- macOS arm64 -------------------------
+          GOOS=darwin GOARCH=arm64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_darwin_arm64 --with github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
+          tar cvzf dist/xk6-mongo_${{ github.ref_name }}_darwin_arm64.tar.gz dist/xk6-mongo_${{ github.ref_name }}_darwin_arm64
+          # ------------------------- Windows amd64 -------------------------
+          GOOS=windows GOARCH=amd64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_windows_amd64.exe --with github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
+          tar cvzf dist/xk6-mongo_${{ github.ref_name }}_windows_amd64.tar.gz dist/xk6-mongo_${{ github.ref_name }}_windows_amd64.exe
+          # ------------------------- Windows arm64 -------------------------
+          GOOS=windows GOARCH=arm64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_windows_arm64.exe --with github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
+          tar cvzf dist/xk6-mongo_${{ github.ref_name }}_windows_arm64.tar.gz dist/xk6-mongo_${{ github.ref_name }}_windows_arm64.exe
 
-      - name: Create Release 📦
+      - name: Generate CycloneDX SBOM artifacts 📃
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+        run: |
+          go install github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod@latest
+          cyclonedx-gomod mod -json -licenses -output code-cyclonedx-xk6-mongo-${{ github.ref_name }}.json
+
+      - name: Create Release 📦 and add binaries and SBOM files 💾
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/*.tar.gz
+          files: |
+            dist/*.tar.gz
+            code-cyclonedx-xk6-kafka-${{ github.ref_name }}.json
+            docker-image-cyclonedx-xk6-kafka-${{ github.ref_name }}.json
