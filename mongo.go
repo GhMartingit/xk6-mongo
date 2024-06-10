@@ -2,13 +2,13 @@ package xk6_mongo
 
 import (
 	"context"
+	"log"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 
-	k6modules  "go.k6.io/k6/js/modules"
-
+	k6modules "go.k6.io/k6/js/modules"
 )
 
 // Register the extension on module initialization, available to
@@ -146,7 +146,7 @@ func (c *Client) UpdateMany(database string, collection string, filter interface
 	col := db.Collection(collection)
 
 	update := bson.D{{"$set", data}}
-	
+
 	_, err := col.UpdateMany(context.Background(), filter, update)
 	if err != nil {
 		log.Printf("Error while updating the documents: %v", err)
@@ -164,7 +164,7 @@ func (c *Client) FindAll(database string, collection string) ([]bson.M, error) {
 		log.Printf("Error while finding documents: %v", err)
 		return nil, err
 	}
-	
+
 	var results []bson.M
 	if err = cur.All(context.Background(), &results); err != nil {
 		log.Printf("Error while decoding documents: %v", err)
