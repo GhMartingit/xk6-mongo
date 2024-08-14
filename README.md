@@ -79,3 +79,36 @@ export default ()=> {
 
 ```
 
+
+### Passing custom `clientOptions` to the mongo client
+
+If we need to pass extra options to the driver connection we can pass a [ClientOptions](https://pkg.go.dev/go.mongodb.org/mongo-driver@v1.15.0/mongo/options#ClientOptions) object.
+
+In this example, we are specifying the use of the [stable api](https://www.mongodb.com/docs/drivers/go/v1.15/fundamentals/stable-api/), with strict compatibility. We are also setting the application name via the `app_name` property as `"k6-test-app"`, so the connection can be identified in the logs server-side.
+
+```js
+import xk6_mongo from 'k6/x/mongo';
+
+const clientOptions = {
+    "app_name": "k6-test-app",
+    "server_api_options": {
+        "server_api_version": "1",
+        "strict": true
+    }
+};
+
+const client = xk6_mongo.newClientWithOptions('mongodb://localhost:27017', clientOptions);
+export default ()=> {
+
+    let doc = {
+        correlationId: `test--mongodb`,
+        title: 'Perf test experiment',
+        url: 'example.com',
+        locale: 'en',
+        time: `${new Date(Date.now()).toISOString()}`
+    };
+
+    client.insert("testdb", "testcollection", doc);
+}
+```
+

@@ -33,10 +33,15 @@ type UpsertOneModel struct {
 // NewClient represents the Client constructor (i.e. `new mongo.Client()`) and
 // returns a new Mongo client object.
 // connURI -> mongodb://username:password@address:port/db?connect=direct
-func (*Mongo) NewClient(connURI string) *Client {
+func (m *Mongo) NewClient(connURI string) *Client {
+	return m.NewClientWithOptions(connURI, options.Client())
+}
+
+func (*Mongo) NewClientWithOptions(connURI string, clientOptions *options.ClientOptions) *Client {
 	log.Print("start creating new client")
 
-	clientOptions := options.Client().ApplyURI(connURI)
+	clientOptions.ApplyURI(connURI)
+
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
 		log.Printf("Error while establishing a connection to MongoDB: %v", err)
