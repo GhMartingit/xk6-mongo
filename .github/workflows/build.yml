@@ -27,6 +27,6 @@ jobs:
           go-version: '1.22'
 
       - name: Create Release 📦
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: dist/*.tar.gz
