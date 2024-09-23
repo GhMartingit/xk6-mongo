@@ -171,9 +171,8 @@ func (c *Client) FindAll(database string, collection string) []bson.M {
 func (c *Client) DeleteOne(database string, collection string, filter map[string]string) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	opts := options.Delete().SetHint(bson.D{{"_id", 1}})
 	log.Print(filter_is, filter)
-	result, err := col.DeleteOne(context.TODO(), filter, opts)
+	result, err := col.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -184,9 +183,8 @@ func (c *Client) DeleteOne(database string, collection string, filter map[string
 func (c *Client) DeleteMany(database string, collection string, filter map[string]string) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	opts := options.Delete().SetHint(bson.D{{"_id", 1}})
 	log.Print(filter_is, filter)
-	result, err := col.DeleteMany(context.TODO(), filter, opts)
+	result, err := col.DeleteMany(context.TODO(), filter)
 	if err != nil {
 		log.Fatal(err)
 	}
