@@ -1,9 +1,8 @@
 name: Build and publish xk6-mongo
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_call:
+
 jobs:
   build:
     name: Build xk6-mongo
@@ -15,37 +14,34 @@ jobs:
           fetch-depth: 0
 
       - name: Install Go 🧑‍💻
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
         uses: actions/setup-go@v5
         with:
           go-version: "1.22"
 
       - name: Install xk6 and build xk6-mongo for different platforms 🏗️
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
         run: |
           mkdir dist
           go install go.k6.io/xk6/cmd/xk6@latest
           # ------------------------- Linux amd64 -------------------------
-          GOOS=linux GOARCH=amd64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_linux_amd64 --with github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
-          tar cvzf dist/xk6-mongo_${{ github.ref_name }}_linux_amd64.tar.gz dist/xk6-mongo_${{ github.ref_name }}_linux_amd64
+          GOOS=linux GOARCH=amd64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_linux_amd64 --with github.com/SimonHarteDP/xk6-mongo-dp@${{ github.ref_name }}
+          tar cvzf dist/xk6-mongo_dp_${{ github.ref_name }}_linux_amd64.tar.gz dist/xk6-mongo_dp_${{ github.ref_name }}_linux_amd64
           # ------------------------- Linux arm64 -------------------------
-          GOOS=linux GOARCH=arm64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_linux_arm64 --with github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
-          tar cvzf dist/xk6-mongo_${{ github.ref_name }}_linux_arm64.tar.gz dist/xk6-mongo_${{ github.ref_name }}_linux_arm64
+          GOOS=linux GOARCH=arm64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_linux_arm64 --with github.com/SimonHarteDP/xk6-mongo-dp@${{ github.ref_name }}
+          tar cvzf dist/xk6-mongo_dp_${{ github.ref_name }}_linux_arm64.tar.gz dist/xk6-mongo_dp_${{ github.ref_name }}_linux_arm64
           # ------------------------- macOS amd64 -------------------------
-          GOOS=darwin GOARCH=amd64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_darwin_amd64 --with github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
-          tar cvzf dist/xk6-mongo_${{ github.ref_name }}_darwin_amd64.tar.gz dist/xk6-mongo_${{ github.ref_name }}_darwin_amd64
+          GOOS=darwin GOARCH=amd64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_darwin_amd64 --with github.com/SimonHarteDP/xk6-mongo-dp@${{ github.ref_name }}
+          tar cvzf dist/xk6-mongo_dp_${{ github.ref_name }}_darwin_amd64.tar.gz dist/xk6-mongo_dp_${{ github.ref_name }}_darwin_amd64
           # ------------------------- macOS arm64 -------------------------
-          GOOS=darwin GOARCH=arm64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_darwin_arm64 --with github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
-          tar cvzf dist/xk6-mongo_${{ github.ref_name }}_darwin_arm64.tar.gz dist/xk6-mongo_${{ github.ref_name }}_darwin_arm64
+          GOOS=darwin GOARCH=arm64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_darwin_arm64 --with github.com/SimonHarteDP/xk6-mongo-dp@${{ github.ref_name }}
+          tar cvzf dist/xk6-mongo_dp_${{ github.ref_name }}_darwin_arm64.tar.gz dist/xk6-mongo_dp_${{ github.ref_name }}_darwin_arm64
           # ------------------------- Windows amd64 -------------------------
-          GOOS=windows GOARCH=amd64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_windows_amd64.exe --with github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
-          tar cvzf dist/xk6-mongo_${{ github.ref_name }}_windows_amd64.tar.gz dist/xk6-mongo_${{ github.ref_name }}_windows_amd64.exe
+          GOOS=windows GOARCH=amd64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_windows_amd64.exe --with github.com/SimonHarteDP/xk6-mongo-dp@${{ github.ref_name }}
+          tar cvzf dist/xk6-mongo_dp_${{ github.ref_name }}_windows_amd64.tar.gz dist/xk6-mongo_dp_${{ github.ref_name }}_windows_amd64.exe
           # ------------------------- Windows arm64 -------------------------
-          GOOS=windows GOARCH=arm64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_windows_arm64.exe --with github.com/GhMartingit/xk6-mongo@${{ github.ref_name }}
-          tar cvzf dist/xk6-mongo_${{ github.ref_name }}_windows_arm64.tar.gz dist/xk6-mongo_${{ github.ref_name }}_windows_arm64.exe
+          GOOS=windows GOARCH=arm64 xk6 build --output dist/xk6-mongo_${{ github.ref_name }}_windows_arm64.exe --with github.com/SimonHarteDP/xk6-mongo-dp@${{ github.ref_name }}
+          tar cvzf dist/xk6-mongo_dp_${{ github.ref_name }}_windows_arm64.tar.gz dist/xk6-mongo_dp_${{ github.ref_name }}_windows_arm64.exe
 
-      - name: Create Release 📦 
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      - name: Create Release 📦
         uses: softprops/action-gh-release@v1
         with:
           files: |
