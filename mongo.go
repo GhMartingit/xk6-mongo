@@ -1,4 +1,4 @@
-package xk6_mongo
+package xk6_mongo_dp
 
 import (
 	"context"
@@ -12,9 +12,9 @@ import (
 )
 
 // Register the extension on module initialization, available to
-// import from JS as "k6/x/mongo".
+// import from JS as "k6/x/mongo-dp".
 func init() {
-	k6modules.Register("k6/x/mongo", new(Mongo))
+	k6modules.Register("k6/x/mongo-dp", new(Mongo))
 }
 
 // Mongo is the k6 extension for a Mongo client.

@@ -1,4 +1,4 @@
-module github.com/GhMartingit/xk6-mongo
+module github.com/SimonHarteDP/xk6-mongo-dp
 
 go 1.20
 
