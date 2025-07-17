@@ -14,6 +14,7 @@ K6 extension to perform tests on mongo.
 - Supports finding distinct values for a field in a collection based on a filter.
 - Supports delete first document based on filter.
 - Supports deleting all documents for a specific filter.
+- Filter parameters for `findOne`, `deleteOne`, and `deleteMany` accept any object, enabling complex queries.
 - Supports dropping a collection.
 
 # xk6-mongo
@@ -112,3 +113,23 @@ export default ()=> {
 }
 ```
 
+
+### Complex filter example
+```js
+import xk6_mongo from 'k6/x/mongo';
+
+const client = xk6_mongo.newClient('mongodb://localhost:27017');
+
+export default () => {
+    let result, error = client.findOne(
+        "testdb",
+        "testcollection",
+        { score: { "$gte": 10 } }
+    );
+    if (error) {
+        console.log(error.message);
+    } else {
+        console.log(result);
+    }
+}
+```
