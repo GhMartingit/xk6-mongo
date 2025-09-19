@@ -35,7 +35,7 @@ func TestCRUDOperations(t *testing.T) {
 		t.Fatalf("unexpected name %v", doc["name"])
 	}
 
-	update := bson.D{{"$set", bson.D{{"name", "updated"}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "name", Value: "updated"}}}}
 	if err := client.UpdateOne(db, col, filter, update); err != nil {
 		t.Fatalf("update: %v", err)
 	}

@@ -18,6 +18,7 @@ K6 extension to perform tests on mongo.
 - Supports dropping a collection.
 
 # xk6-mongo
+
 A k6 extension for interacting with mongoDb while testing.
 
 ## Build
@@ -42,6 +43,7 @@ To build a custom `k6` binary with this extension, first ensure you have the pre
    This will create a k6 binary that includes the xk6-mongo extension in your local folder. This k6 binary can now run a k6 test.
 
 ### Development
+
 To make development a little smoother, use the `Makefile` in the root folder. The default target will format your code, run tests, and create a `k6` binary with your local code rather than from GitHub.
 
 ```shell
@@ -57,9 +59,10 @@ Using the `k6` binary with `xk6-mongo`, run the k6 test as usual:
 
 ```
 
-## Examples: 
+## Examples
 
 ### Document Insertion Test
+
 ```js
 import xk6_mongo from 'k6/x/mongo';
 
@@ -79,7 +82,6 @@ export default ()=> {
 }
 
 ```
-
 
 ### Passing custom `clientOptions` to the mongo client
 
@@ -113,8 +115,8 @@ export default ()=> {
 }
 ```
 
-
 ### Complex filter example
+
 ```js
 import xk6_mongo from 'k6/x/mongo';
 

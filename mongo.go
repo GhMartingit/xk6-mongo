@@ -52,7 +52,7 @@ func (*Mongo) NewClientWithOptions(connURI string, clientOptions *options.Client
 	return &Client{client: client}
 }
 
-func (c *Client) Insert(database string, collection string, doc interface{}) error {
+func (c *Client) Insert(database string, collection string, doc any) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.InsertOne(context.Background(), doc)
@@ -64,7 +64,7 @@ func (c *Client) Insert(database string, collection string, doc interface{}) err
 	return nil
 }
 
-func (c *Client) InsertMany(database string, collection string, docs []interface{}) error {
+func (c *Client) InsertMany(database string, collection string, docs []any) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.InsertMany(context.Background(), docs)
@@ -75,7 +75,7 @@ func (c *Client) InsertMany(database string, collection string, docs []interface
 	return nil
 }
 
-func (c *Client) Upsert(database string, collection string, filter interface{}, upsert interface{}) error {
+func (c *Client) Upsert(database string, collection string, filter any, upsert any) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	opts := options.Update().SetUpsert(true)
@@ -87,7 +87,9 @@ func (c *Client) Upsert(database string, collection string, filter interface{}, 
 	return nil
 }
 
-func (c *Client) Find(database string, collection string, filter interface{}, sort interface{}, limit int64) ([]bson.M, error) {
+const errDecodingDocuments = "Error while decoding documents: %v"
+
+func (c *Client) Find(database string, collection string, filter any, sort any, limit int64) ([]bson.M, error) {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	opts := options.Find().SetSort(sort).SetLimit(limit)
@@ -98,13 +100,13 @@ func (c *Client) Find(database string, collection string, filter interface{}, so
 	}
 	var results []bson.M
 	if err = cur.All(context.Background(), &results); err != nil {
-		log.Printf("Error while decoding documents: %v", err)
+		log.Printf(errDecodingDocuments, err)
 		return nil, err
 	}
 	return results, nil
 }
 
-func (c *Client) Aggregate(database string, collection string, pipeline interface{}) ([]bson.M, error) {
+func (c *Client) Aggregate(database string, collection string, pipeline any) ([]bson.M, error) {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	cur, err := col.Aggregate(context.Background(), pipeline)
@@ -114,13 +116,13 @@ func (c *Client) Aggregate(database string, collection string, pipeline interfac
 	}
 	var results []bson.M
 	if err = cur.All(context.Background(), &results); err != nil {
-		log.Printf("Error while decoding documents: %v", err)
+		log.Printf(errDecodingDocuments, err)
 		return nil, err
 	}
 	return results, nil
 }
 
-func (c *Client) FindOne(database string, collection string, filter interface{}) (bson.M, error) {
+func (c *Client) FindOne(database string, collection string, filter any) (bson.M, error) {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	var result bson.M
@@ -133,7 +135,7 @@ func (c *Client) FindOne(database string, collection string, filter interface{})
 	return result, nil
 }
 
-func (c *Client) UpdateOne(database string, collection string, filter interface{}, data bson.D) error {
+func (c *Client) UpdateOne(database string, collection string, filter any, data bson.D) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 
@@ -146,11 +148,11 @@ func (c *Client) UpdateOne(database string, collection string, filter interface{
 	return nil
 }
 
-func (c *Client) UpdateMany(database string, collection string, filter interface{}, data bson.D) error {
+func (c *Client) UpdateMany(database string, collection string, filter any, data bson.D) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 
-	update := bson.D{{"$set", data}}
+	update := bson.D{{Key: "$set", Value: data}}
 
 	_, err := col.UpdateMany(context.Background(), filter, update)
 	if err != nil {
@@ -172,14 +174,14 @@ func (c *Client) FindAll(database string, collection string) ([]bson.M, error) {
 
 	var results []bson.M
 	if err = cur.All(context.Background(), &results); err != nil {
-		log.Printf("Error while decoding documents: %v", err)
+		log.Printf(errDecodingDocuments, err)
 		return nil, err
 	}
 
 	return results, nil
 }
 
-func (c *Client) DeleteOne(database string, collection string, filter interface{}) error {
+func (c *Client) DeleteOne(database string, collection string, filter any) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.DeleteOne(context.Background(), filter)
@@ -191,7 +193,7 @@ func (c *Client) DeleteOne(database string, collection string, filter interface{
 	return nil
 }
 
-func (c *Client) DeleteMany(database string, collection string, filter interface{}) error {
+func (c *Client) DeleteMany(database string, collection string, filter any) error {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	_, err := col.DeleteMany(context.Background(), filter)
@@ -203,7 +205,7 @@ func (c *Client) DeleteMany(database string, collection string, filter interface
 	return nil
 }
 
-func (c *Client) Distinct(database string, collection string, field string, filter interface{}) ([]interface{}, error) {
+func (c *Client) Distinct(database string, collection string, field string, filter any) ([]any, error) {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	result, err := col.Distinct(context.Background(), field, filter)
@@ -227,7 +229,7 @@ func (c *Client) DropCollection(database string, collection string) error {
 	return nil
 }
 
-func (c *Client) CountDocuments(database string, collection string, filter interface{}) (int64, error) {
+func (c *Client) CountDocuments(database string, collection string, filter any) (int64, error) {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	count, err := col.CountDocuments(context.Background(), filter)
@@ -238,7 +240,7 @@ func (c *Client) CountDocuments(database string, collection string, filter inter
 	return count, nil
 }
 
-func (c *Client) FindOneAndUpdate(database string, collection string, filter interface{}, update interface{}) (*mongo.SingleResult, error) {
+func (c *Client) FindOneAndUpdate(database string, collection string, filter any, update any) (*mongo.SingleResult, error) {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
