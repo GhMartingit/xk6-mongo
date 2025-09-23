@@ -82,15 +82,22 @@ func (c *Client) InsertMany(database string, collection string, docs []any) erro
 }
 
 func (c *Client) Upsert(database string, collection string, filter any, upsert any) error {
-	db := c.client.Database(database)
-	col := db.Collection(collection)
-	opts := options.Update().SetUpsert(true)
-	_, err := col.UpdateOne(context.Background(), filter, upsert, opts)
-	if err != nil {
-		log.Printf("Error while performing upsert: %v", err)
-		return err
-	}
-	return nil
+    db := c.client.Database(database)
+    col := db.Collection(collection)
+    opts := options.Update().SetUpsert(true)
+
+    updateDoc, err := prepareUpdateDocument(upsert)
+    if err != nil {
+        log.Printf("Error while preparing upsert document: %v", err)
+        return err
+    }
+
+    _, err = col.UpdateOne(context.Background(), filter, updateDoc, opts)
+    if err != nil {
+        log.Printf("Error while performing upsert: %v", err)
+        return err
+    }
+    return nil
 }
 
 const errDecodingDocuments = "Error while decoding documents: %v"
@@ -182,7 +189,8 @@ func (c *Client) UpdateMany(database string, collection string, filter any, data
 func (c *Client) FindAll(database string, collection string) ([]bson.M, error) {
 	db := c.client.Database(database)
 	col := db.Collection(collection)
-	cur, err := col.Find(context.Background(), bson.D{{}})
+    // Use an empty filter to match all documents
+    cur, err := col.Find(context.Background(), bson.D{})
 	if err != nil {
 		log.Printf("Error while finding documents: %v", err)
 		return nil, err
@@ -256,16 +264,17 @@ func (c *Client) CountDocuments(database string, collection string, filter any) 
 	return count, nil
 }
 
-func (c *Client) FindOneAndUpdate(database string, collection string, filter any, update any) (*mongo.SingleResult, error) {
-	db := c.client.Database(database)
-	col := db.Collection(collection)
-	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
-	result := col.FindOneAndUpdate(context.Background(), filter, update, opts)
-	if result.Err() != nil {
-		log.Printf("Error while finding and updating document: %v", result.Err())
-		return nil, result.Err()
-	}
-	return result, nil
+func (c *Client) FindOneAndUpdate(database string, collection string, filter any, update any) (bson.M, error) {
+    db := c.client.Database(database)
+    col := db.Collection(collection)
+    opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+    var out bson.M
+    err := col.FindOneAndUpdate(context.Background(), filter, update, opts).Decode(&out)
+    if err != nil {
+        log.Printf("Error while finding and updating document: %v", err)
+        return nil, err
+    }
+    return out, nil
 }
 
 func (c *Client) Disconnect() error {

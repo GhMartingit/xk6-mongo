@@ -34,7 +34,7 @@ The scripts are independent, but this order produces readable output:
 2. `test-insert.js` (insert a single document)
 3. `test-find.js` (find a document)
 4. `test-update.js` (update a single document)
-5. `test-findoneandupdate.js` (update + return updated doc; note: logs `{}` due to driver return type)
+5. `test-findoneandupdate.js` (update + return updated doc; logs the updated document)
 6. `test-insertmany.js` (insert a batch of documents)
 7. `test-updatemany.js` (bulk update documents)
 8. `test-countdocuments.js` (count matching documents)
@@ -61,4 +61,3 @@ Run a script like this:
   ```
 
 - Update helpers accept either a full update document with operators (e.g., `{ $set: { ... } }`) or a plain object, which is automatically wrapped in `$set`.
-
