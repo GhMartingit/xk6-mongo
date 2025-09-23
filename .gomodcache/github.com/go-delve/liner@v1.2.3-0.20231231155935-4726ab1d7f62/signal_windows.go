@@ -1,3 +1,0 @@
-package liner
-
-func handleCtrlZ() {}

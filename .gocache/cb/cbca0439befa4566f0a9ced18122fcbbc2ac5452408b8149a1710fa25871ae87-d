@@ -1,7 +1,0 @@
-./download.go
-./k6binary.go
-./lock.go
-./lock_nix.go
-./provider.go
-./pruner.go
-./util.go

@@ -1,9 +1,0 @@
-./descriptors.go
-./doc.go
-./files.go
-./linker.go
-./pathkey_unsafe.go
-./pool.go
-./resolve.go
-./symbols.go
-./validate.go

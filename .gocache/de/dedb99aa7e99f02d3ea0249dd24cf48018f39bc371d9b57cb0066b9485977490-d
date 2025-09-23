@@ -1,4 +1,0 @@
-./config.go
-./prometheus.go
-./remotewrite.go
-./trend.go

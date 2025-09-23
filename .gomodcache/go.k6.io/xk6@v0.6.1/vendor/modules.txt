@@ -1,3 +1,0 @@
-# github.com/Masterminds/semver/v3 v3.1.0
-## explicit
-github.com/Masterminds/semver/v3

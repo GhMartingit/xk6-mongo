@@ -1,5 +1,0 @@
-./afero_links.go
-./cacheonread.go
-./changepathfs.go
-./filepath.go
-./walk.go

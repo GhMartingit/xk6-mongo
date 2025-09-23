@@ -1,9 +1,0 @@
-./bridge.go
-./event.go
-./frozen_object.go
-./init_error.go
-./initenv.go
-./interrupt_error.go
-./randsource.go
-./tags.go
-./util.go

@@ -1,6 +1,0 @@
-./abort_reason.go
-./exception.go
-./exit_code.go
-./format.go
-./hint.go
-./interrupt_error.go

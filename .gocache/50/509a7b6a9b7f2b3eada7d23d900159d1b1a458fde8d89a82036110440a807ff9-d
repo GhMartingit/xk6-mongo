@@ -1,7 +1,0 @@
-./client.go
-./event.go
-./event_log.go
-./http.go
-./server.go
-./stream.go
-./subscriber.go

@@ -1,3 +1,0 @@
-[submodule "it"]
-	path = it
-	url = git@github.com:grafana/xk6-it.git

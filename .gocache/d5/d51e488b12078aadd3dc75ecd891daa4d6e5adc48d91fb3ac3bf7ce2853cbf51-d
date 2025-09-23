@@ -1,7 +1,0 @@
-./collect.go
-./flush.go
-./hdr.go
-./mapping.go
-./metrics_client.go
-./output.go
-./sink.go

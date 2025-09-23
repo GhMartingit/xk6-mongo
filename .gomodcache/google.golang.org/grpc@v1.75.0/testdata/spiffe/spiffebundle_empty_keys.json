@@ -1,9 +1,0 @@
-{
-    "trust_domains": {
-        "": {
-            "spiffe_sequence": 12035488,
-            "keys": [
-            ]
-        }
-    }
-}

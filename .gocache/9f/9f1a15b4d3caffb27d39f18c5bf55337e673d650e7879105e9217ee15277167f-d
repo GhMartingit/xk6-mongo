@@ -1,7 +1,0 @@
-./axpy.go
-./doc.go
-./dot.go
-./ge_noasm.go
-./l2norm_noasm.go
-./scal.go
-./stubs_noasm.go

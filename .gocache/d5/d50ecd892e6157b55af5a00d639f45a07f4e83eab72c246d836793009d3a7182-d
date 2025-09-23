@@ -1,8 +1,0 @@
-./error_other.go
-./filepath.go
-./fs.go
-./fs_mock.go
-./fs_real.go
-./fs_zip.go
-./iswin_other.go
-./modkey_unix.go

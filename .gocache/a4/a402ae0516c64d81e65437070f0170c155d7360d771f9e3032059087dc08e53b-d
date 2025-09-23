@@ -1,6 +1,0 @@
-./attribute.go
-./config.go
-./exporter.go
-./output.go
-./registry.go
-./tls.go

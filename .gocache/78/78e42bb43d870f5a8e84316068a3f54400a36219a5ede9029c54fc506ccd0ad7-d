@@ -1,5 +1,0 @@
-./cblas128.go
-./conv.go
-./conv_hermitian.go
-./conv_symmetric.go
-./doc.go

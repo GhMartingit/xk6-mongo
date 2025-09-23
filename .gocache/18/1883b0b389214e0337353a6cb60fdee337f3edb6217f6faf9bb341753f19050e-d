@@ -1,6 +1,0 @@
-./backoff.go
-./context.go
-./exponential.go
-./retry.go
-./ticker.go
-./tries.go

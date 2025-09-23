@@ -1,9 +1,0 @@
-./bundle.go
-./console.go
-./doc.go
-./initcontext.go
-./jsmodules.go
-./modules_vu.go
-./runner.go
-./summary.go
-./timeout_error.go

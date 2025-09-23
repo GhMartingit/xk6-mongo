@@ -1,6 +1,0 @@
-./api.go
-./api_impl.go
-./api_js_table.go
-./favicon.go
-./serve_other.go
-./watcher.go

@@ -1,4 +1,0 @@
-./js_ast.go
-./js_ast_helpers.go
-./js_ident.go
-./unicode.go

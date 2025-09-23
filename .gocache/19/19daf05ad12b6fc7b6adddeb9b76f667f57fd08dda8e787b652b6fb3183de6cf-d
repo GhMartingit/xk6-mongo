@@ -1,8 +1,0 @@
-./annotate.go
-./main.go
-./ortho.go
-./punctuation.go
-./sentence_tokenizer.go
-./storage.go
-./token.go
-./word_tokenizer.go

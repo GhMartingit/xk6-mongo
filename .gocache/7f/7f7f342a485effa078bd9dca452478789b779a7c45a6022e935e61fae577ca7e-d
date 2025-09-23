@@ -1,9 +1,0 @@
-./dns.go
-./dns_policy_gen.go
-./dns_select_gen.go
-./hostnametrie.go
-./hosts.go
-./ipblock.go
-./net.go
-./trie.go
-./types.go
