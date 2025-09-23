@@ -1,0 +1,4 @@
+./doc.go
+./extension.go
+./hook.go
+./manager.go

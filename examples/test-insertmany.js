@@ -10,7 +10,7 @@ export default () => {
     docobjs.push(getRecord());
   }
 
-  let error = client.insertMany("test", "test", docobjs);
+  let error = client.insertMany("testdb", "testcollection", docobjs);
   if (error) 
     console.log(error.message);
 }
@@ -18,7 +18,7 @@ export default () => {
 function getRecord() {
   return {
     _id: `${makeId(15)}`,
-    correlationId: `test--couchbase`,
+    correlationId: `test--mongodb`,
     title: 'Perf test experiment',
     url: 'example.com',
     locale: 'en',

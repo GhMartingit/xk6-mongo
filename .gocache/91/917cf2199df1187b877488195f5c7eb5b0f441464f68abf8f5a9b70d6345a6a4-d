@@ -1,0 +1,5 @@
+./cache.go
+./errors.go
+./errors_gen.go
+./file.go
+./module.go

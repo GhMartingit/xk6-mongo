@@ -1,0 +1,69 @@
+#####
+# Test for multiple call stacks in source mode
+$ govulncheck -C ${moddir}/multientry . --> FAIL 3
+=== Symbol Results ===
+
+Vulnerability #1: GO-2021-0113
+    Due to improper index calculation, an incorrectly formatted language tag can
+    cause Parse to panic via an out of bounds read. If Parse is used to process
+    untrusted user inputs, this may be used as a vector for a denial of service
+    attack.
+  More info: https://pkg.go.dev/vuln/GO-2021-0113
+  Module: golang.org/x/text
+    Found in: golang.org/x/text@v0.3.5
+    Fixed in: golang.org/x/text@v0.3.7
+    Example traces found:
+      #1: main.go:99:20: multientry.foobar calls language.MustParse
+      #2: main.go:44:23: multientry.C calls language.Parse
+
+Your code is affected by 1 vulnerability from 1 module.
+This scan found no other vulnerabilities in packages you import or modules you
+require.
+Use '-show verbose' for more details.
+
+#####
+# Test for multple call stacks in source mode with expanded traces
+$ govulncheck -show verbose -C ${moddir}/multientry -show=traces ./... --> FAIL 3
+Fetching vulnerabilities from the database...
+
+Checking the code against the vulnerabilities...
+
+The package pattern matched the following root package:
+  golang.org/multientry
+Govulncheck scanned the following 2 modules and the go1.18 standard library:
+  golang.org/multientry
+  golang.org/x/text@v0.3.5
+
+=== Symbol Results ===
+
+Vulnerability #1: GO-2021-0113
+    Due to improper index calculation, an incorrectly formatted language tag can
+    cause Parse to panic via an out of bounds read. If Parse is used to process
+    untrusted user inputs, this may be used as a vector for a denial of service
+    attack.
+  More info: https://pkg.go.dev/vuln/GO-2021-0113
+  Module: golang.org/x/text
+    Found in: golang.org/x/text@v0.3.5
+    Fixed in: golang.org/x/text@v0.3.7
+    Example traces found:
+      #1: for function golang.org/x/text/language.MustParse
+        main @ golang.org/multientry/main.go:26:3
+        D @ golang.org/multientry/main.go:48:8
+        foobar @ golang.org/multientry/main.go:99:20
+        MustParse @ golang.org/x/text/language/tags.go:13:6
+      #2: for function golang.org/x/text/language.Parse
+        main @ golang.org/multientry/main.go:22:3
+        C @ golang.org/multientry/main.go:44:23
+        Parse @ golang.org/x/text/language/parse.go:33:6
+
+=== Package Results ===
+
+No other vulnerabilities found.
+
+=== Module Results ===
+
+No other vulnerabilities found.
+
+Your code is affected by 1 vulnerability from 1 module.
+This scan found no other vulnerabilities in packages you import or modules you
+require.

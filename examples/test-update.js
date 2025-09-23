@@ -20,7 +20,7 @@ export function setup() {
 }
 
 export default () => {
-  let error = client.updateOne(db, col, {unique_id: id}, {$set: {locale: 'in', title: 'This is the change'}});
+  let error = client.updateOne(db, col, {update_id: id}, {locale: 'in', title: 'This is the change'});
   if (error) 
     console.log(error.message);
 }

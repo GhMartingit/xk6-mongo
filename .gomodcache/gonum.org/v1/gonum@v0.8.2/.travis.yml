@@ -1,0 +1,102 @@
+sudo: false
+
+language: go
+
+# Do not move these lines; they are referred to by README.md.
+# Versions of go that are explicitly supported by Gonum, plus Go tip.
+go:
+ - 1.15.x
+ - 1.14.x
+ - master
+
+os:
+ - linux
+ - osx
+ - windows
+
+arch:
+ - amd64
+ - arm64
+
+env:
+ global:
+  - GO111MODULE=on
+  - GOFLAGS="-mod=readonly"
+ matrix:
+  - TAGS=""
+  - TAGS="-tags bounds"
+  - TAGS="-tags noasm"
+  - TAGS="-tags appengine"
+  - FORCE_GOARCH=386
+
+cache:
+ directories:
+  - $HOME/.cache/go-build
+  - $HOME/gopath/pkg/mod
+
+git:
+ depth: 1
+ autocrlf: input
+
+matrix:
+ fast_finish: true
+ exclude:
+  - os: linux
+    arch: arm64
+    env: TAGS="-tags bounds"
+  - os: linux
+    arch: arm64
+    env: TAGS="-tags noasm"
+  - os: linux
+    arch: arm64
+    env: TAGS="-tags appengine"
+  - os: linux
+    arch: arm64
+    env: FORCE_GOARCH=386
+
+  - os: osx
+    env: TAGS="-tags bounds"
+  - os: osx
+    env: TAGS="-tags noasm"
+  - os: osx
+    env: TAGS="-tags appengine"
+  - os: osx
+    env: FORCE_GOARCH=386
+
+  - os: osx
+    arch: arm64
+
+  - os: osx
+    go: master
+
+  - os: windows
+    env: TAGS="-tags bounds"
+  - os: windows
+    env: TAGS="-tags noasm"
+  - os: windows
+    env: TAGS="-tags appengine"
+  - os: windows
+    env: FORCE_GOARCH=386
+
+  - os: windows
+    arch: arm64
+
+  - os: windows
+    go: master
+ allow_failures:
+  - go: master
+
+before_install:
+ - ${TRAVIS_BUILD_DIR}/.travis/run-parts ${TRAVIS_BUILD_DIR}/.travis/deps.d/${TRAVIS_OS_NAME}
+
+addons:
+  apt:
+    packages:
+     - graphviz
+
+go_import_path: gonum.org/v1/gonum
+
+# Get deps, build, test, and ensure the code is gofmt'ed.
+# If we are building as gonum, then we have access to the coveralls api key, so we can run coverage as well.
+script:
+ - ${TRAVIS_BUILD_DIR}/.travis/run-parts ${TRAVIS_BUILD_DIR}/.travis/run.d/${TRAVIS_OS_NAME}

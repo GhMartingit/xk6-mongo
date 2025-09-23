@@ -1,0 +1,39 @@
+on: [push, pull_request]
+name: Test
+permissions:
+  contents: read
+
+jobs:
+  version-matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: [1.22.x, 1.23.x, 1.24.x]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    
+    runs-on: ${{ matrix.platform }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}   
+  
+    - name: Configure known hosts
+      if: matrix.platform != 'ubuntu-latest'
+      run: |
+        mkdir -p  ~/.ssh
+        ssh-keyscan -H github.com > ~/.ssh/known_hosts
+
+    - name: Set Git config
+      run: |
+        git config --global user.email "gha@example.com"
+        git config --global user.name "GitHub Actions"
+
+    - name: Test
+      run: make test-coverage
+
+    - name: Test Examples
+      run: go test -timeout 30s -v -run '^TestExamples$' github.com/go-git/go-git/v5/_examples --examples

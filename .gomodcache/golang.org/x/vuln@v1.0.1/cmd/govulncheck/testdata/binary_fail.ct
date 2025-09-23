@@ -1,0 +1,26 @@
+#####
+# Test of passing a non-file to -mode=binary
+$ govulncheck -mode=binary notafile --> FAIL 2
+"notafile" is not a file
+
+#####
+# Test of passing a non-binary file to -mode=binary
+$ govulncheck -mode=binary ${moddir}/vuln/go.mod --> FAIL 1
+Scanning your binary for known vulnerabilities...
+
+govulncheck: could not parse provided binary: unrecognized file format
+
+#####
+# Test of trying to analyze multiple binaries
+$ govulncheck -mode=binary ${vuln_binary} ${vuln_binary} --> FAIL 2
+only 1 binary can be analyzed at a time
+
+#####
+# Test of trying to run -mode=binary with -tags flag
+$ govulncheck -tags=foo -mode=binary ${vuln_binary} --> FAIL 2
+the -tags flag is not supported in binary mode
+
+#####
+# Test of trying to run -mode=binary with the -test flag
+$ govulncheck -test -mode=binary ${vuln_binary} --> FAIL 2
+the -test flag is not supported in binary mode

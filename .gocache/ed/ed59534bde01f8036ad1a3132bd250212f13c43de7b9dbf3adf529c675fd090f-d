@@ -1,0 +1,11 @@
+./cephes.go
+./doc.go
+./igam.go
+./igami.go
+./incbeta.go
+./incbi.go
+./lanczos.go
+./ndtri.go
+./polevl.go
+./unity.go
+./zeta.go

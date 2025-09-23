@@ -1,0 +1,49 @@
+name: test
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+      - README.md
+      - "releases/**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Test
+    strategy:
+      matrix:
+        platform:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{matrix.platform}}
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test
+        run: go test -race -count 1 ./...
+
+      - name: Coverage Test
+        if: ${{ matrix.platform == 'ubuntu-latest' && github.ref_name == 'main' }}
+        run: go test -count 1 -coverprofile=coverage.txt ./...
+
+      - name: Upload Coverage
+        if: ${{ matrix.platform == 'ubuntu-latest' && github.ref_name == 'main' }}
+        uses: codecov/codecov-action@v5.4.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: grafana/k6provider
+
+      - name: Generate Go Report Card
+        if: ${{ matrix.platform == 'ubuntu-latest' && github.ref_name == 'main' }}
+        uses: creekorful/goreportcard-action@v1.0

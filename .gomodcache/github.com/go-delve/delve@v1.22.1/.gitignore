@@ -1,0 +1,13 @@
+**/*.test
+.tags*
+tags
+.dbg_history
+**/**/dlv
+!cmd/dlv/
+.vagrant
+**/*.swp
+localtests
+.idea
+*.iml
+.teamcity/target
+.vscode

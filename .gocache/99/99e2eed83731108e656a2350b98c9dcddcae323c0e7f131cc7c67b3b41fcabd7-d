@@ -1,0 +1,3 @@
+./json.go
+./json_easyjson.go
+./wrapper.go

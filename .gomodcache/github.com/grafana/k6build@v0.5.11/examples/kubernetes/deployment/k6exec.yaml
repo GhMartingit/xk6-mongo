@@ -1,0 +1,20 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  generateName: k6exec-
+  labels:
+    app: k6exec
+spec:
+  restartPolicy: Never
+  containers:
+  - name: k6exec
+    image: ghcr.io/grafana/k6exec:latest
+    imagePullPolicy: IfNotPresent
+    command: ["k6exec", "--build-service-url", "http://k6build:8000", "run", "test/sqlite.js"]
+    volumeMounts:
+    - mountPath: "/home/k6exec/test"
+      name: test
+  volumes:
+  - name: test
+    configMap:
+      name: k6test

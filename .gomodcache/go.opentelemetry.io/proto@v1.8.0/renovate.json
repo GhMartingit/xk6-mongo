@@ -1,0 +1,56 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": [
+		"config:recommended"
+	],
+	"ignorePaths": [],
+	"labels": [
+		"Skip Changelog",
+		"actions",
+		"dependencies"
+	],
+	"postUpdateOptions": [
+		"gomodTidy"
+	],
+	"packageRules": [
+		{
+			"matchManagers": [
+				"gomod"
+			],
+			"matchDepTypes": [
+				"indirect"
+			],
+			"enabled": true
+		},
+		{
+			"matchPackageNames": [
+				"go.opentelemetry.io/build-tools/**"
+			],
+			"groupName": "build-tools"
+		},
+		{
+			"matchPackageNames": [
+				"google.golang.org/genproto/googleapis/**"
+			],
+			"groupName": "googleapis"
+		},
+		{
+			"matchManagers": [
+				"gomod"
+			],
+			"groupName": "All golang.org/x packages",
+			"matchPackageNames": [
+				"golang.org/x{/,}**"
+			]
+		},
+		{
+			"matchManagers": [
+				"gomod"
+			],
+			"matchDepTypes": [
+				"toolchain"
+			],
+			"enabled": false
+		}
+	]
+}

@@ -1,0 +1,2 @@
+./ingester.pb.go
+./ingester_grpc.pb.go

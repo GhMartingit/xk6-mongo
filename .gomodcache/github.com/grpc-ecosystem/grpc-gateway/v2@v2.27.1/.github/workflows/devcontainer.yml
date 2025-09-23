@@ -1,0 +1,28 @@
+on:
+  push:
+    paths:
+      - .devcontainer/devcontainer.json
+      - .github/workflows/devcontainer.yml
+      - .github/Dockerfile
+permissions:
+  contents: read
+  packages: write
+name: devcontainer
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Rebuild dev container image
+        uses: devcontainers/ci@8bf61b26e9c3a98f69cb6ce2f88d24ff59b785c6 # v0.3
+        with:
+          imageName: ghcr.io/grpc-ecosystem/grpc-gateway/build-env
+          cacheFrom: ghcr.io/grpc-ecosystem/grpc-gateway/build-env
+          push: filter
+          refFilterForPush: refs/heads/main

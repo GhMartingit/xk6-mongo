@@ -1,0 +1,12 @@
+addReviewers: true
+addAssignees: false
+useAssigneeGroups: false
+numberOfReviewers: 2
+reviewers:
+  - na--
+  - MStoykov
+  - codebien
+  - oleiade
+  - olegbespalov
+skipKeywords:
+  - wip

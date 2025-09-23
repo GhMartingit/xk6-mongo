@@ -1,0 +1,16 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0.3%
+      windows:
+        target: auto
+        flags: [windows]
+      ubuntu:
+        target: auto
+        flags: [ubuntu]
+
+flags:
+  windows:
+  ubuntu:

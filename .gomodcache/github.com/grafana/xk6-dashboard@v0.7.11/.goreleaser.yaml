@@ -1,0 +1,29 @@
+version: 2
+project_name: k6-web-dashboard
+before:
+  hooks:
+    - go mod tidy
+dist: build/dist
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos: ["darwin", "linux", "windows"]
+    goarch: ["amd64"]
+    ldflags:
+      - "-s -w -X {{.ModulePath}}/cmd.version={{.Version}} -X {{.ModulePath}}/cmd.appname={{.ProjectName}}"
+    dir: cmd/k6-web-dashboard
+source:
+  enabled: false
+
+archives:
+  - id: bundle
+    formats: ["tar.gz"]
+    format_overrides:
+      - goos: windows
+        formats: ["zip"]
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next+{{.ShortCommit}}{{if .IsGitDirty}}.dirty{{else}}{{end}}"

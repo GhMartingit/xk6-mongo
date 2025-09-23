@@ -1,0 +1,139 @@
+This test checks that we correctly determine pkgsite links for various
+identifiers.
+
+We should only produce links that work, meaning the object is reachable via the
+package's public API.
+
+Requires go1.19+ for the new go/doc/comment package.
+
+-- flags --
+-min_go=go1.19
+
+-- go.mod --
+module mod.com
+
+go 1.18
+-- p.go --
+package p
+
+type E struct {
+	Embed int
+}
+
+// T is in the package scope, and so should be linkable.
+type T struct{ //@hover("T", "T", T)
+	// Only exported fields should be linkable
+
+	f int //@hover("f", "f", f)
+	F int //@hover("F", "F", F)
+
+	E
+
+	// TODO(rfindley): is the link here correct? It ignores N.
+	N struct {
+		// Nested fields should also be linkable.
+		Nested int //@hover("Nested", "Nested", Nested)
+	}
+}
+// M is an exported method, and so should be linkable.
+func (T) M() {}
+
+// m is not exported, and so should not be linkable.
+func (T) m() {}
+
+func _() {
+	var t T
+
+	// Embedded fields should be linkable.
+	_ = t.Embed //@hover("Embed", "Embed", Embed)
+
+	// Local variables should not be linkable, even if they are capitalized.
+	var X int //@hover("X", "X", X)
+	_ = X
+
+	// Local types should not be linkable, even if they are capitalized.
+	type Local struct { //@hover("Local", "Local", Local)
+		E
+	}
+
+	// But the embedded field should still be linkable.
+	var l Local
+	_ = l.Embed //@hover("Embed", "Embed", Embed)
+}
+-- @Embed --
+```go
+field Embed int
+```
+
+[`(p.E).Embed` on pkg.go.dev](https://pkg.go.dev/mod.com#E.Embed)
+-- @F --
+```go
+field F int
+```
+
+@hover("F", "F", F)
+
+
+[`(p.T).F` on pkg.go.dev](https://pkg.go.dev/mod.com#T.F)
+-- @Local --
+```go
+type Local struct {
+	E
+}
+```
+
+Local types should not be linkable, even if they are capitalized.
+
+
+```go
+// Embedded fields:
+Embed int // through E 
+```
+-- @Nested --
+```go
+field Nested int
+```
+
+Nested fields should also be linkable.
+-- @T --
+```go
+type T struct {
+	f int //@hover("f", "f", f)
+	F int //@hover("F", "F", F)
+
+	E
+
+	// TODO(rfindley): is the link here correct? It ignores N.
+	N struct {
+		// Nested fields should also be linkable.
+		Nested int //@hover("Nested", "Nested", Nested)
+	}
+}
+```
+
+T is in the package scope, and so should be linkable.
+
+
+```go
+// Embedded fields:
+Embed int // through E 
+```
+
+```go
+func (T) M()
+func (T) m()
+```
+
+[`p.T` on pkg.go.dev](https://pkg.go.dev/mod.com#T)
+-- @X --
+```go
+var X int
+```
+
+Local variables should not be linkable, even if they are capitalized.
+-- @f --
+```go
+field f int
+```
+
+@hover("f", "f", f)

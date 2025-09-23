@@ -1,0 +1,14 @@
+*
+
+# must-have toplevel files
+!/go.sum
+!/go.mod
+!*.go
+!/LICENSE
+
+# directories
+!/cli
+!/internal/include
+!/internal/pkg
+!/pipeline
+!/sdk

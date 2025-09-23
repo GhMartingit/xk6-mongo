@@ -1,0 +1,42 @@
+name: lint
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+      - README.md
+      - "releases/**"
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Set golangci-lint version
+        run: |
+          LINT_VERSION=$(head -n 1 ".golangci.yml" | tr -d '# ')
+          echo "LINT_VERSION=${LINT_VERSION}" >> $GITHUB_ENV
+      - name: Go linter
+        uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6.5.2
+        with:
+          version: ${{ env.LINT_VERSION }}
+          args: --timeout=30m
+          install-mode: binary
+          verify: false

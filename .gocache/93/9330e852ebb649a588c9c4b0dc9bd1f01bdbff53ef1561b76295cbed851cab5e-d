@@ -1,0 +1,7 @@
+./cookiejar.go
+./doc.go
+./file.go
+./http.go
+./request.go
+./response.go
+./response_callback.go

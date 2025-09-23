@@ -1,0 +1,6 @@
+{
+        "k6": {"module": "go.k6.io/k6", "versions": ["v0.50.0", "v0.51.0"]},
+        "k6/x/kubernetes": {"module": "github.com/grafana/xk6-kubernetes", "versions": ["v0.8.0","v0.9.0"]},
+        "k6/x/sql": {"module": "github.com/grafana/xk6-sql", "versions": ["v0.4.0"]},
+        "k6/x/output-kafka": {"module": "github.com/grafana/xk6-output-kafka", "versions": ["v0.7.0"]}
+}

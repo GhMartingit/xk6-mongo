@@ -1,0 +1,6 @@
+./analyze.go
+./archive.go
+./dependencies.go
+./dependency.go
+./doc.go
+./options.go

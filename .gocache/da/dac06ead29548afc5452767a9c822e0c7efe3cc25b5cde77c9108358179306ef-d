@@ -1,0 +1,13 @@
+./batch.go
+./compression.go
+./compression_type_gen.go
+./digest_transport.go
+./error_codes.go
+./error_codes_syscall_posix.go
+./httpdebug_transport.go
+./request.go
+./response.go
+./response_type_gen.go
+./tracer.go
+./transport.go
+./url.go

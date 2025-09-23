@@ -1,0 +1,184 @@
+name: ci
+
+on:
+  push:
+    tags:
+      - "v*"
+    branches:
+      - main
+  pull_request:
+  schedule:
+    - cron: "30 10 * * 0"
+
+jobs:
+  test-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+          - macos-latest
+        go-arch:
+          - amd64
+        go-version:
+          - "1.18"
+          - "1.19"
+          - "1.20"
+          - "1.21"
+          - "1.22"
+          - "1.23"
+          - "^1"
+        include:
+          - os: ubuntu-latest
+            go-arch: "386"
+            go-version: "^1"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          check-latest: true
+      - name: set GOOARCH
+        run: echo "GOARCH=${{ matrix.go-arch }}" >>"$GITHUB_ENV"
+      - name: go build check
+        run: go build ./...
+      - name: go test build check
+        run: go test -run none ./...
+
+  test-windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version:
+          - "1.18"
+          - "1.20"
+          - "1.21"
+          - "oldstable"
+          - "stable"
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          check-latest: true
+      - name: mkdir gocoverdir
+        # We can only use -test.gocoverdir for Go >= 1.20.
+        if: ${{ matrix.go-version != '1.18' && matrix.go-version != '1.19' }}
+        run: |
+          # mktemp --tmpdir -d gocoverdir.XXXXXXXX
+          function New-TemporaryDirectory {
+            param (
+              [string] $Prefix
+            )
+            $parent = [System.IO.Path]::GetTempPath()
+            do {
+              [string] $guid = [System.Guid]::NewGuid()
+              $item = New-Item -Path "$parent" -Name "$Prefix.$guid" -ItemType "directory" -ErrorAction SilentlyContinue
+            } while (-not "$item")
+            return $item.FullName
+          }
+          $GOCOVERDIR = (New-TemporaryDirectory -Prefix "gocoverdir")
+          echo "GOCOVERDIR=$GOCOVERDIR" >>"$env:GITHUB_ENV"
+      - name: unit tests
+        run: |
+          if (Test-Path 'env:GOCOVERDIR') {
+            go test -v -cover '-test.gocoverdir' "$env:GOCOVERDIR" ./...
+          } else {
+            go test -v ./...
+          }
+      - name: upload coverage
+        # We can only use -test.gocoverdir for Go >= 1.20.
+        if: ${{ matrix.go-version != '1.18' && matrix.go-version != '1.19' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ runner.os }}-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ env.GOCOVERDIR }}
+
+  test-unix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+        go-version:
+          - "1.18"
+          - "1.20"
+          - "1.21"
+          - "oldstable"
+          - "stable"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          check-latest: true
+      - name: mkdir gocoverdir
+        # We can only use -test.gocoverdir for Go >= 1.20.
+        if: ${{ matrix.go-version != '1.18' && matrix.go-version != '1.19' }}
+        run: |
+          GOCOVERDIR="$(mktemp --tmpdir -d gocoverdir.XXXXXXXX)"
+          echo "GOCOVERDIR=$GOCOVERDIR" >>"$GITHUB_ENV"
+      - name: go test
+        run: go test -v -timeout=30m ${GOCOVERDIR:+-cover -test.gocoverdir="$GOCOVERDIR"} ./...
+      - name: sudo go test
+        run: sudo go test -v -timeout=30m ${GOCOVERDIR:+-cover -test.gocoverdir="$GOCOVERDIR"} ./...
+      - name: upload coverage
+        # We can only use -test.gocoverdir for Go >= 1.20.
+        if: ${{ matrix.go-version != '1.18' && matrix.go-version != '1.19' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ runner.os }}-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ env.GOCOVERDIR }}
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs:
+      - test-windows
+      - test-unix
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+          check-latest: true
+      - name: download all coverage
+        uses: actions/download-artifact@v4
+        with:
+          path: coverage
+      - name: generate coverage list
+        run: |
+          find coverage/
+          GOCOVERDIRS="$(printf '%s,' coverage/* | sed 's|,$||')"
+          echo "GOCOVERDIRS=$GOCOVERDIRS" >>"$GITHUB_ENV"
+          FULLCOVERAGE_FILE="$(mktemp --tmpdir fullcoverage.XXXXXXXX)"
+          echo "FULLCOVERAGE_FILE=$FULLCOVERAGE_FILE" >>"$GITHUB_ENV"
+      - name: compute coverage
+        run: go tool covdata percent -i "$GOCOVERDIRS"
+      - name: compute func coverage
+        run: go tool covdata func -i "$GOCOVERDIRS" | sort -k 3gr
+      - name: merge coverage
+        run: |
+          go tool covdata textfmt -i "$GOCOVERDIRS" -o "$FULLCOVERAGE_FILE"
+          go tool cover -html="$FULLCOVERAGE_FILE" -o "$FULLCOVERAGE_FILE.html"
+      - name: upload merged coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: fullcoverage-${{ github.job }}
+          path: ${{ env.FULLCOVERAGE_FILE }}
+      - name: upload coverage html
+        uses: actions/upload-artifact@v4
+        with:
+          name: fullcoverage-${{ github.job }}.html
+          path: ${{ env.FULLCOVERAGE_FILE }}.html
+
+  codespell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install codespell==v2.3.0
+      - run: codespell

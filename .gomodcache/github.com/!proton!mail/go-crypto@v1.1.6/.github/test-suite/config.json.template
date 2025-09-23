@@ -1,0 +1,36 @@
+{
+    "drivers": [
+      {
+        "id": "gosop-branch-v1",
+        "path": "__GOSOP_BRANCH_V1__"
+      },
+      {
+        "id": "gosop-branch-v2",
+        "path": "__GOSOP_BRANCH_V2__"
+      },
+      {
+        "id": "gosop-main-v1",
+        "path": "__GOSOP_MAIN_V1__"
+      },
+        {
+        "id": "gosop-main-v2",
+        "path": "__GOSOP_MAIN_V2__"
+      },
+      {
+        "path": "__SQOP__"
+      },
+      {
+        "path": "__GPGME_SOP__"
+      },
+      {
+        "path": "__SOP_OPENPGPJS__"
+      },
+      {
+        "path": "__RNP_SOP__"
+      }
+    ],
+    "rlimits": {
+      "DATA": 1073741824
+    }
+}
+  

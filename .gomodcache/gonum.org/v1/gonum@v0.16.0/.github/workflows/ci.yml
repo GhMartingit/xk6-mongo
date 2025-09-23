@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    name: Build
+    strategy:
+      matrix:
+        # Do not move this line; it is referred to by README.md.
+        # Versions of Go that are explicitly supported by Gonum.
+        go-version: [1.24.x, 1.23.x]
+        platform: [ubuntu-latest, macos-latest]
+        force-goarch: ["", "386"]
+        tags: 
+          - ""
+          - "-tags bounds"
+          - "-tags noasm"
+          - "-tags safe"
+
+        exclude:
+          - platform: ubuntu-latest
+            tags: "-tags bounds"
+            force-goarch: "386"
+          - platform: ubuntu-latest
+            tags: "-tags noasm"
+            force-goarch: "386"
+          - platform: ubuntu-latest
+            tags: "-tags safe"
+            force-goarch: "386"
+          - platform: macos-latest
+            force-goarch: "386"
+          - platform: macos-latest
+            tags: "-tags bounds"
+          - platform: macos-latest
+            tags: "-tags noasm"
+          - platform: macos-latest
+            tags: "-tags safe"
+
+    runs-on: ${{ matrix.platform }}
+    env:
+        GO111MODULE: on
+        GOPATH: ${{ github.workspace }}
+        TAGS: ${{ matrix.tags }}
+        FORCE_GOARCH: ${{ matrix.force-goarch }}
+    defaults:
+        run:
+            working-directory: ${{ env.GOPATH }}/src/gonum.org/v1/gonum
+
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+          path: ${{ env.GOPATH }}/src/gonum.org/v1/gonum
+
+    - name: Cache-Go
+      uses: actions/cache@v4
+      with:
+        # In order:
+        # * Module download cache 
+        # * Build cache (Linux)
+        # * Build cache (Mac)
+        # * Build cache (Windows)
+        path: |
+          ~/go/pkg/mod
+          ~/.cache/go-build
+          ~/Library/Caches/go-build
+          '%LocalAppData%\go-build'
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+    - name: Check copyrights+imports+formatting+generate
+      if: matrix.platform == 'ubuntu-latest' && matrix.tags == ''
+      run: |
+        sudo apt-get update
+        sudo apt-get install -qq ragel
+        ./.github/workflows/script.d/deps.sh
+        ./.github/workflows/script.d/check-copyright.sh
+        ./.github/workflows/script.d/check-imports.sh
+        ./.github/workflows/script.d/check-formatting.sh
+        ./.github/workflows/script.d/check-generate.sh
+
+    - name: Test
+      run: |
+        ./.github/workflows/script.d/test.sh
+
+    - name: Coverage
+      if: matrix.platform == 'ubuntu-latest'
+      run: |
+        ./.github/workflows/script.d/test-coverage.sh
+
+    - name: Upload-Coverage
+      if: matrix.platform == 'ubuntu-latest'
+      uses: codecov/codecov-action@v1

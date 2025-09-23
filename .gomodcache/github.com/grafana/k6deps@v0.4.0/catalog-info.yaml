@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: k6deps
+  title: k6deps
+  description: |
+    The goal of k6deps is to extract dependencies from k6 test scripts. For this purpose, k6deps analyzes the k6 test scripts and the modules imported from it in a recursive manner.
+  annotations:
+    github.com/project-slug: grafana/k6deps
+spec:
+  type: tool
+  owner: group:default/k6-extensions
+  lifecycle: production

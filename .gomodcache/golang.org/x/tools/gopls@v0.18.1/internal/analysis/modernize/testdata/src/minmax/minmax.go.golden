@@ -1,0 +1,94 @@
+package minmax
+
+func ifmin(a, b int) {
+	x := max(a, b)
+	print(x)
+}
+
+func ifmax(a, b int) {
+	x := min(a, b)
+	print(x)
+}
+
+func ifminvariant(a, b int) {
+	x := min(a, b)
+	print(x)
+}
+
+func ifmaxvariant(a, b int) {
+	x := min(a, b)
+	print(x)
+}
+
+func ifelsemin(a, b int) {
+	var x int
+	x = min(a, b)
+	print(x)
+}
+
+func ifelsemax(a, b int) {
+	var x int
+	x = max(a, b)
+	print(x)
+}
+
+func shadowed() int {
+	hour, min := 3600, 60
+
+	var time int
+	if hour < min { // silent: the built-in min function is shadowed here
+		time = hour
+	} else {
+		time = min
+	}
+	return time
+}
+
+func nopeIfStmtHasInitStmt() {
+	x := 1
+	if y := 2; y < x { // silent: IfStmt has an Init stmt
+		x = y
+	}
+	print(x)
+}
+
+// Regression test for a bug: fix was "y := max(x, y)".
+func oops() {
+	x := 1
+	y := max(x, 2)
+	print(y)
+}
+
+// Regression test for a bug: += is not a simple assignment.
+func nopeAssignHasIncrementOperator() {
+	x := 1
+	y := 0
+	y += 2
+	if x > y {
+		y = x
+	}
+	print(y)
+}
+
+// Regression test for https://github.com/golang/go/issues/71721.
+func nopeNotAMinimum(x, y int) int {
+	// A value of -1 or 0 will use a default value (30).
+	if x <= 0 {
+		y = 30
+	} else {
+		y = x
+	}
+	return y
+}
+
+// Regression test for https://github.com/golang/go/issues/71847#issuecomment-2673491596
+func nopeHasElseBlock(x int) int {
+	y := x
+	// Before, this was erroneously reduced to y = max(x, 0)
+	if y < 0 {
+		y = 0
+	} else {
+		y += 2
+	}
+	return y
+}

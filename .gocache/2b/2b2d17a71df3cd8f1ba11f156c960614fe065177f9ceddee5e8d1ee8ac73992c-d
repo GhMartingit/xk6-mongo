@@ -1,0 +1,11 @@
+./errors.go
+./errors_gen.go
+./goja.go
+./module.go
+./queue.go
+./readable_stream_controller.go
+./readable_stream_default_controller.go
+./readable_stream_default_reader.go
+./readable_stream_reader.go
+./readable_streams.go
+./underlying_source.go

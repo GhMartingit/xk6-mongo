@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mytest-initializer
+spec:
+  containers:
+  - command:
+    - sh
+    - -c
+    - mkdir -p $(dirname /tmp/sqlite.js.archived.tar) && k6 archive /test/sqlite.js
+      -O /tmp/sqlite.js.archived.tar  2> /tmp/k6logs && k6 inspect --execution-requirements
+      /tmp/sqlite.js.archived.tar 2> /tmp/k6logs ; ! cat /tmp/k6logs | grep 'level=error'
+    env:
+    - name: K6_BUILD_SERVICE_URL
+      value: http://k6build:8000
+    image: ghcr.io/grafana/k6exec:v0.1.7
+    imagePullPolicy: IfNotPresent
+    name: k6
+    ports:
+    - containerPort: 6565
+      protocol: TCP
+    resources: {}
+    securityContext: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /test
+      name: k6-test-volume
+  volumes:
+  - configMap:
+      defaultMode: 420
+      name: k6test
+    name: k6-test-volume

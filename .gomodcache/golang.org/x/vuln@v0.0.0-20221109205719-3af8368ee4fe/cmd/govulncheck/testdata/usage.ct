@@ -1,0 +1,35 @@
+$ govulncheck -h
+usage:
+	govulncheck [flags] package...
+	govulncheck [flags] binary
+
+  -dir string
+    	directory to use for loading source files
+  -json
+    	output JSON
+  -tags list
+    	comma-separated list of build tags
+  -test
+    	analyze test files. Only valid for source code.
+  -v	print a full call stack for each vulnerability
+
+For details, see https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck.
+
+
+# Same output as -h, but failure.
+$ govulncheck --> FAIL 1
+usage:
+	govulncheck [flags] package...
+	govulncheck [flags] binary
+
+  -dir string
+    	directory to use for loading source files
+  -json
+    	output JSON
+  -tags list
+    	comma-separated list of build tags
+  -test
+    	analyze test files. Only valid for source code.
+  -v	print a full call stack for each vulnerability
+
+For details, see https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck.

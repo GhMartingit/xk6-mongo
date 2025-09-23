@@ -1,0 +1,4 @@
+./blas64.go
+./conv.go
+./conv_symmetric.go
+./doc.go

@@ -1,0 +1,14 @@
+./builtin.go
+./metric.go
+./metric_type.go
+./package.go
+./registry.go
+./sample.go
+./sink.go
+./system_tag.go
+./system_tag_gen.go
+./tags.go
+./thresholds.go
+./thresholds_parser.go
+./units.go
+./value_type.go

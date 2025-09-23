@@ -1,0 +1,55 @@
+#####
+# Test of invalid input to -mode
+$ govulncheck -mode=invalid ./... --> FAIL 2
+invalid value "invalid" for flag -mode: see -help for details
+
+#####
+# Test of trying to run -json with -show flag
+$ govulncheck -C ${moddir}/vuln -show=traces -json . --> FAIL 2
+the -show flag is not supported for json output
+
+#####
+# Test of invalid input to -scan
+$ govulncheck -scan=invalid ./... --> FAIL 2
+invalid value "invalid" for flag -scan: see -help for details
+
+#####
+# Test of invalid flag
+$ govulncheck -flag go ./... --> FAIL 2
+flag provided but not defined: -flag
+
+
+#####
+# Test of invalid show flag list value
+$ govulncheck -show traces,color,verbose,something ./... --> FAIL 2
+invalid value "traces,color,verbose,something" for flag -show: see -help for details
+
+#####
+# Test of invalid show flag value
+$ govulncheck -show everything ./... --> FAIL 2
+invalid value "everything" for flag -show: see -help for details
+
+#####
+# Test of invalid -format value
+$ govulncheck -format invalid ./... --> FAIL 2
+invalid value "invalid" for flag -format: see -help for details
+
+#####
+# Test of trying to run -json with '-format text' flag
+$ govulncheck -C ${moddir}/vuln -json -format text . --> FAIL 2
+the -json flag cannot be used with -format flag
+
+#####
+# Test of explicit format use together with -json flag
+$ govulncheck -C ${moddir}/vuln -format json -json . --> FAIL 2
+the -json flag cannot be used with -format flag
+
+#####
+# Test of trying to run -format sarif with -show flag
+$ govulncheck -C ${moddir}/vuln -show=traces -format sarif . --> FAIL 2
+the -show flag is not supported for sarif output
+
+#####
+# Test that -json and -format sarif are not allowed together
+$ govulncheck -format sarif -json ./... --> FAIL 2
+the -json flag cannot be used with -format flag

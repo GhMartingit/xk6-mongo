@@ -1,0 +1,73 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: storesrv
+  labels:
+    app: storesrv
+spec:
+  containers:
+  - name: storesrv
+    image: grafana/k6build
+    imagePullPolicy: Never
+    command: ["k6build", "store", "--log-level", "DEBUG", "--download-url", "http://storesrv:9000/store"]
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: storesrv
+spec:
+  selector:
+    app: storesrv
+  type: LoadBalancer
+  ports:
+  - port: 9000
+
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: k6build
+  labels:
+    app: k6build
+spec:
+  containers:
+  - name: buildsrv
+    image: grafana/k6build
+    imagePullPolicy: Never
+    command:
+    - "k6build"
+    - "server"
+    - "--verbose"
+    - "--log-level"
+    - "DEBUG"
+    - "--store-url"
+    - "http://storesrv:9000/store"
+    - "-e"
+    - "CGO_ENABLED=1"
+    - "--catalog"
+    - "catalog.json"
+    volumeMounts:
+    - mountPath: "/home/k6build"
+      name: catalog
+      readOnly: true
+    - mountPath: "/home/k6build/.cache"
+      name: gocache
+  volumes:
+  - name: catalog
+    configMap:
+      name: k6build-catalog
+  - name: gocache
+    emptyDir: {}
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: k6build
+spec:
+  selector:
+    app: k6build
+  type: LoadBalancer
+  ports:
+  - port: 8000

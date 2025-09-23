@@ -1,0 +1,5 @@
+{
+        "k6": {"module": "go.k6.io/k6", "versions": ["v0.1.0", "v0.2.0"]},
+        "k6/x/ext": {"module": "go.k6.io/k6ext", "versions": ["v0.1.0", "v0.2.0"]},
+        "k6/x/ext2": {"module": "go.k6.io/k6ext2", "versions": ["v0.1.0"]}
+}

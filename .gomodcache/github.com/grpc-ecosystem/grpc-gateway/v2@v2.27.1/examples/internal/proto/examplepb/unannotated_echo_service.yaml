@@ -1,0 +1,18 @@
+type: google.api.Service
+config_version: 3
+
+http:
+  rules:
+  - selector: grpc.gateway.examples.internal.proto.examplepb.UnannotatedEchoService.Echo
+    post: "/v1/example/echo/{id}"
+    additional_bindings:
+    - get: "/v1/example/echo/{id}/{num}"
+  - selector: grpc.gateway.examples.internal.proto.examplepb.UnannotatedEchoService.EchoBody
+    post: "/v1/example/echo_body"
+    body: "*"
+  - selector: grpc.gateway.examples.internal.proto.examplepb.UnannotatedEchoService.EchoDelete
+    delete: "/v1/example/echo_delete"
+  - selector: grpc.gateway.examples.internal.proto.examplepb.UnannotatedEchoService.EchoNested
+    put: "/v1/example/echo_nested"
+    body: "*"
+    response_body: "n_id"

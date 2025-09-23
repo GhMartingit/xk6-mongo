@@ -1,0 +1,4 @@
+./detection.go
+./sha1cd.go
+./sha1cdblock_generic.go
+./sha1cdblock_noasm.go

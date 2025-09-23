@@ -1,0 +1,75 @@
+name: Smoke Tests
+
+on: [pull_request]
+
+jobs:
+  build:
+    name: ${{ matrix.os }} ${{ matrix.version }}
+    runs-on: ${{ matrix.os }}
+    
+    # Not containing 'SKIP CI' in the commit message AND
+    # (Either non-Windows OR triggered on 'push' (if triggered by 'pull_request', github.base_ref is not empty)
+    if: "!contains(github.event.head_commit.message, 'SKIP CI')"
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        version: ['stable']
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+         node-version: '18'
+         cache: 'npm'
+         cache-dependency-path: './extension/package-lock.json'
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+         go-version: '1.22'
+         check-latest: true
+         cache: true
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./extension
+      
+      - name: Compile
+        run: npm run vscode:prepublish
+        working-directory: ./extension
+
+      - name: Install Go tools (Modules mode)
+        run: |
+            go version
+            go run ./tools/installtools/main.go
+        working-directory: ./extension
+        env:
+          GO111MODULE: on
+          EXT: "${{ matrix.os == 'windows-latest' && '.exe' || ''}}"
+      
+      - name: Run unit tests
+        run: npm run unit-test
+        working-directory: ./extension
+        
+      - name: Run tests (Linux)
+        run: xvfb-run -a npm run test
+        working-directory: ./extension
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        env:
+          CODE_VERSION: ${{ matrix.version }}
+      - name: Run tests (Windows/Mac)
+        run: npm run test
+        working-directory: ./extension
+        if: ${{ matrix.os != 'ubuntu-latest' }}
+        env:
+          CODE_VERSION: ${{ matrix.version }}
+
+      - name: Lint check
+        run: npm run lint
+        working-directory: ./extension
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.version == 'stable' }}

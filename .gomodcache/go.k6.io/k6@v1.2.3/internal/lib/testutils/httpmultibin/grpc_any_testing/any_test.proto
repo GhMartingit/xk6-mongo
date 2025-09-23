@@ -1,0 +1,31 @@
+
+
+syntax = "proto3";
+
+package grpc.any.testing;
+
+import "google/protobuf/any.proto";
+
+option go_package ="./grpc_any_testing";
+
+service AnyTestService {
+	rpc Sum (SumRequest) returns (SumReply) {}
+}
+
+message SumRequest {
+	google.protobuf.Any data = 1;
+}
+
+message SumRequestData {
+	int64 a = 1;
+	int64 b = 2;
+}
+
+message SumReply {
+	google.protobuf.Any data = 1;
+}
+
+message SumReplyData {
+	int64 v = 1;
+	string err = 2;
+}

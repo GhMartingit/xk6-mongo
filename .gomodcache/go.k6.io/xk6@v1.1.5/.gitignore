@@ -1,0 +1,11 @@
+/xk6
+/xk6.exe
+k6
+k6.exe
+
+/coverage.txt
+
+/dist/
+
+# grafana/shared-workflows
+/_shared-workflows*

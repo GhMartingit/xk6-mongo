@@ -1,0 +1,5 @@
+./compiler.go
+./doc.go
+./resolver.go
+./std_imports.go
+./supported_editions.go

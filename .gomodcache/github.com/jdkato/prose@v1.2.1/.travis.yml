@@ -1,0 +1,39 @@
+dist: bionic
+language: go
+go:
+  - "1.13.x"
+env:
+  - GO111MODULE=on
+
+install:
+  - make build
+
+stages:
+  - name: Build & test
+    if: type != cron
+
+  - name: Fuzzit-Regression
+    if: type != cron AND type != pull_request AND branch = master
+
+  - name: Fuzzit-Fuzzing
+    if: type != cron AND type != pull_request AND branch = master
+
+jobs:
+  include:
+    - stage: Build & test
+      script:
+        - make test
+        # Coveralls is down for maintenance currently
+        - go get github.com/mattn/goveralls
+        - bash scripts/cover.sh
+
+    # TODO: Fix this
+    # - stage: Fuzzit-Regression
+    #   go: 1.12.x
+    #   script:
+    #     - bash scripts/fuzzit.sh regression
+    #
+    # - stage: Fuzzit-Fuzzing
+    #   go: 1.12.x
+    #   script:
+    #     - bash scripts/fuzzit.sh fuzzing

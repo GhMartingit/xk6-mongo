@@ -7,6 +7,9 @@
 
 k6
 .DS_Store
+.gocache
+.gomodcache
+.docker-tmp
 
 # Test binary, built with `go test -c`
 *.test

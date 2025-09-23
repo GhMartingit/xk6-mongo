@@ -1,0 +1,13 @@
+./checker_codeowners.go
+./checker_git.go
+./checker_license.go
+./checker_module.go
+./checker_readme.go
+./checker_security.go
+./checker_util.go
+./checker_vulnerability.go
+./checks.go
+./compliance_gen.go
+./grade.go
+./lint.go
+./options.go

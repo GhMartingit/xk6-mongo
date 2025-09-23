@@ -1,0 +1,23 @@
+#####
+# Test souce mode with no callstacks
+$ govulncheck -C ${moddir}/informational -show=traces .
+Scanning your code and P packages across M dependent modules for known vulnerabilities...
+
+=== Informational ===
+
+Found 1 vulnerability in packages that you import, but there are no call
+stacks leading to the use of this vulnerability. You may not need to
+take any action. See https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck
+for details.
+
+Vulnerability #1: GO-2021-0265
+    A maliciously crafted path can cause Get and other query functions to
+    consume excessive amounts of CPU and time.
+  More info: https://pkg.go.dev/vuln/GO-2021-0265
+  Module: github.com/tidwall/gjson
+    Found in: github.com/tidwall/gjson@v1.9.2
+    Fixed in: github.com/tidwall/gjson@v1.9.3
+
+No vulnerabilities found.
+
+Share feedback at https://go.dev/s/govulncheck-feedback.

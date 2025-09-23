@@ -12,9 +12,6 @@ export default () => {
     }
   ];
 
-  let result, error = client.aggregate("testdb", "testcollection", aggregationPipeline);
-  if (error) 
-    console.log(error.message);
-  else 
-    console.log(`Aggregation result: ${JSON.stringify(result)}`);
+  let result = client.aggregate("testdb", "testcollection", aggregationPipeline);
+  console.log(`Aggregation result: ${JSON.stringify(result)}`);
 }

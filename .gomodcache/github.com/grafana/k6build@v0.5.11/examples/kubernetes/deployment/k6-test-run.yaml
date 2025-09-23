@@ -1,0 +1,18 @@
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: mytest
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6test
+      file: sqlite.js
+  runner:
+    env:
+    - name: K6_BUILD_SERVICE_URL
+      value: http://k6build:8000
+    image: ghcr.io/grafana/k6exec:v0.1.7 
+    imagePullPolicy: IfNotPresent
+    
+

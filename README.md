@@ -85,9 +85,9 @@ export default ()=> {
 
 ### Passing custom `clientOptions` to the mongo client
 
-If we need to pass extra options to the driver connection we can pass a [ClientOptions](https://pkg.go.dev/go.mongodb.org/mongo-driver@v1.15.0/mongo/options#ClientOptions) object.
+If we need to pass extra options to the driver connection we can pass a plain JavaScript object.
 
-In this example, we are specifying the use of the [stable api](https://www.mongodb.com/docs/drivers/go/v1.15/fundamentals/stable-api/), with strict compatibility. We are also setting the application name via the `app_name` property as `"k6-test-app"`, so the connection can be identified in the logs server-side.
+Snake_case and camelCase keys are automatically translated to the underlying Go driver field names. In this example, we are specifying the use of the [stable api](https://www.mongodb.com/docs/drivers/go/v1.15/fundamentals/stable-api/), with strict compatibility. We are also setting the application name via the `app_name` property as `"k6-test-app"`, so the connection can be identified in the logs server-side.
 
 ```js
 import xk6_mongo from 'k6/x/mongo';
@@ -113,6 +113,10 @@ export default ()=> {
 
     client.insert("testdb", "testcollection", doc);
 }
+
+// When using update helpers you can provide either a full update document
+// (with operators like $set) or a plain object. Plain objects are
+// automatically wrapped in $set before being sent to MongoDB.
 ```
 
 ### Complex filter example
@@ -123,15 +127,11 @@ import xk6_mongo from 'k6/x/mongo';
 const client = xk6_mongo.newClient('mongodb://localhost:27017');
 
 export default () => {
-    let result, error = client.findOne(
+    const result = client.findOne(
         "testdb",
         "testcollection",
         { score: { "$gte": 10 } }
     );
-    if (error) {
-        console.log(error.message);
-    } else {
-        console.log(result);
-    }
+    console.log(result);
 }
 ```

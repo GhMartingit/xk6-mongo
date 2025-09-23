@@ -1,0 +1,6 @@
+./abs.go
+./conj.go
+./doc.go
+./isinf.go
+./isnan.go
+./sqrt.go

@@ -1,0 +1,6 @@
+./cjsmodule.go
+./gomodule.go
+./gomodule_basic.go
+./modules.go
+./require_impl.go
+./resolution.go

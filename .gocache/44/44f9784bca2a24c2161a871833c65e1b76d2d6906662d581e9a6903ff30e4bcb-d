@@ -1,0 +1,7 @@
+./global_name_parser.go
+./js_parser.go
+./js_parser_lower.go
+./js_parser_lower_class.go
+./json_parser.go
+./sourcemap_parser.go
+./ts_parser.go

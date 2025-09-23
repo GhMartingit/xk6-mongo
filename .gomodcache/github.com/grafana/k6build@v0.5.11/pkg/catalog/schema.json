@@ -1,0 +1,33 @@
+{
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://github.com/grafana/k6build/catalog.json",
+        "type": "object",
+        "description": "mapping of dependencies to the golang module that satisfies it",
+        "additionalProperties": {
+                "type": "object",
+                "properties": {
+                        "module": {
+                                "type": "string",
+                                "description": "go module path that satisfies the dependency. See https://go.dev/ref/mod#module-path"
+                        },
+                        "versions": {
+                                "type": "array",
+                                "descriptions": "list of versions supported for the dependency",
+                                "items": {
+                                        "type": "string",
+                                        "pattern": "^v(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)$"
+                                }
+                        },
+                        "cgo": {
+                                "type": "boolean",
+                                "description": "whether the dependency requires cgo"
+                        }
+
+                },
+                "required": [
+                        "module",
+                        "versions"
+                ],
+                "additionalProperties": false
+        }
+}
