@@ -105,8 +105,8 @@ github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 h1:ilQV1hzziu+LLM3zU
 github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78/go.mod h1:aL8wCCfTfSfmXjznFBSZNN13rSJjlIOI1fUNAtF7rmI=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
-go.k6.io/k6 v1.2.3 h1:VBvF+NHhWFgJvvDTxZE3yH4MWtBy3F5zrM0TSCjmWrI=
-go.k6.io/k6 v1.2.3/go.mod h1:p26sefGdpTY/fnqeWGfiGw5Lir+7Aq73YgsL8sP1uU8=
+go.k6.io/k6 v1.3.0 h1:GDqdgPQWFrQW6RG7SbNxkoudjcPX8O6zPm1JUCsHB5E=
+go.k6.io/k6 v1.3.0/go.mod h1:UnZKD0laYPrCi2A/ab35Mw0H+eZ1BwCqb9ZQhW0gHeI=
 go.mongodb.org/mongo-driver v1.17.4 h1:jUorfmVzljjr0FLzYQsGP8cgN/qzzxlY9Vh0C9KFXVw=
 go.mongodb.org/mongo-driver v1.17.4/go.mod h1:Hy04i7O2kC4RS06ZrhPRqj/u4DTYkFDAAccj+rVKqgQ=
 go.opentelemetry.io/auto/sdk v1.2.1 h1:jXsnJ4Lmnqd11kwkBV2LgLoFMZKizbCi5fNZ/ipaZ64=
