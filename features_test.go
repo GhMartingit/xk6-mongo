@@ -19,7 +19,9 @@ func TestAllFeatures(t *testing.T) {
 	if client == nil {
 		t.Fatal("Failed to create client")
 	}
-	defer client.Disconnect()
+	defer func() {
+		_ = client.Disconnect()
+	}()
 
 	db := "featurestest"
 	col := "testcollection"

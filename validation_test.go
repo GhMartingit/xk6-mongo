@@ -42,8 +42,8 @@ func TestToPascalCase(t *testing.T) {
 	}{
 		{"snake_case", "SnakeCase"},
 		{"kebab-case", "KebabCase"},
-		{"camelCase", "Camelcase"},      // Current behavior: lowercases then capitalizes
-		{"PascalCase", "Pascalcase"},    // Current behavior: lowercases then capitalizes
+		{"camelCase", "Camelcase"},   // Current behavior: lowercases then capitalizes
+		{"PascalCase", "Pascalcase"}, // Current behavior: lowercases then capitalizes
 		{"app_name", "AppName"},
 		{"server_api_version", "ServerAPIVersion"}, // API is recognized acronym
 		{"api_key", "APIKey"},
