@@ -1,4 +1,6 @@
 name: Build and publish xk6-mongo
+permissions:
+  contents: write
 
 on:
   push:
