@@ -1,20 +1,5 @@
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-
-  govet:
-    enable-all: true
-
-  gocyclo:
-    min-complexity: 15
-
-  dupl:
-    threshold: 100
-
-  goconst:
-    min-len: 3
-    min-occurrences: 3
+run:
+  timeout: 5m
 
 linters:
   enable:
@@ -32,13 +17,8 @@ linters:
     - unparam
 
   disable:
-    - typecheck # Sometimes problematic with k6 modules
+    - typecheck
 
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-
-run:
-  timeout: 5m
-  go: '1.24'

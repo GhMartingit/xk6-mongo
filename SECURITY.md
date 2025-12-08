@@ -202,11 +202,11 @@ const client = xk6_mongo.newClientWithOptions(
 ### Connection String Best Practices
 
 ```javascript
-// ✅ GOOD - Secure connection string
-const uri = `mongodb+srv://${__ENV.MONGO_USER}:${__ENV.MONGO_PASSWORD}@cluster.mongodb.net/?retryWrites=true&tls=true`;
+// ✅ GOOD - Secure connection string with environment variables
+const uri = `mongodb+srv://${__ENV.MONGO_USER}:${__ENV.MONGO_PASSWORD}@your-cluster.mongodb.net/?retryWrites=true&tls=true`;
 
-// ❌ BAD - Insecure connection
-const uri = 'mongodb://admin:password@localhost:27017/?tls=false';
+// ❌ BAD - Hardcoded credentials (never do this!)
+const uri = 'mongodb://admin:PASSWORD@localhost:27017/?tls=false';
 ```
 
 ## Input Validation
@@ -252,7 +252,7 @@ const results = client.find("testdb", "collection", filter, null, 100);
 
 ```bash
 # .env file (add to .gitignore!)
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/
+MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@your-cluster.mongodb.net/
 MONGODB_DATABASE=testdb
 
 # Use with k6
