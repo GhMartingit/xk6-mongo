@@ -17,7 +17,9 @@ func TestCRUDOperations(t *testing.T) {
 	if client == nil {
 		t.Fatalf("failed to create client")
 	}
-	defer client.Disconnect()
+	defer func() {
+		_ = client.Disconnect()
+	}()
 
 	db := "crudtestdb"
 	col := "crudtestcol"
