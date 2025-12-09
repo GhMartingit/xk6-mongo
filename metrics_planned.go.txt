@@ -1,0 +1,443 @@
+package xk6_mongo
+
+import (
+	"time"
+
+	"go.k6.io/k6/metrics"
+)
+
+// Metrics holds all MongoDB-specific metrics for k6
+type Metrics struct {
+	// Connection metrics
+	ConnectionCount     *metrics.Metric
+	ConnectionSeconds   *metrics.Metric
+	DisconnectionCount  *metrics.Metric
+	PingCount           *metrics.Metric
+	PingSeconds         *metrics.Metric
+	ConnectionErrorCount *metrics.Metric
+
+	// Read operation metrics
+	FindCount          *metrics.Metric
+	FindSeconds        *metrics.Metric
+	FindDocumentCount  *metrics.Metric
+	FindDocumentBytes  *metrics.Metric
+	FindErrorCount     *metrics.Metric
+
+	// Write operation metrics
+	InsertCount        *metrics.Metric
+	InsertSeconds      *metrics.Metric
+	InsertDocumentCount *metrics.Metric
+	InsertDocumentBytes *metrics.Metric
+	InsertErrorCount   *metrics.Metric
+
+	UpdateCount        *metrics.Metric
+	UpdateSeconds      *metrics.Metric
+	UpdateDocumentCount *metrics.Metric
+	UpdateErrorCount   *metrics.Metric
+
+	DeleteCount        *metrics.Metric
+	DeleteSeconds      *metrics.Metric
+	DeleteDocumentCount *metrics.Metric
+	DeleteErrorCount   *metrics.Metric
+
+	// Aggregation metrics
+	AggregateCount       *metrics.Metric
+	AggregateSeconds     *metrics.Metric
+	AggregateStageCount  *metrics.Metric
+	AggregateResultCount *metrics.Metric
+	AggregateErrorCount  *metrics.Metric
+
+	// Bulk operation metrics
+	BulkWriteCount      *metrics.Metric
+	BulkWriteSeconds    *metrics.Metric
+	BulkWriteOpsCount   *metrics.Metric
+	BulkWriteErrorCount *metrics.Metric
+
+	// Network metrics
+	BytesSent     *metrics.Metric
+	BytesReceived *metrics.Metric
+}
+
+// NewMetrics creates and registers all MongoDB metrics with k6
+func NewMetrics(registry *metrics.Registry) (*Metrics, error) {
+	m := &Metrics{}
+	var err error
+
+	// Connection metrics
+	m.ConnectionCount, err = registry.NewMetric("mongo_connection_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.ConnectionSeconds, err = registry.NewMetric("mongo_connection_seconds", metrics.Trend, metrics.Time)
+	if err != nil {
+		return nil, err
+	}
+	m.DisconnectionCount, err = registry.NewMetric("mongo_disconnection_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.PingCount, err = registry.NewMetric("mongo_ping_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.PingSeconds, err = registry.NewMetric("mongo_ping_seconds", metrics.Trend, metrics.Time)
+	if err != nil {
+		return nil, err
+	}
+	m.ConnectionErrorCount, err = registry.NewMetric("mongo_connection_error_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+
+	// Read operation metrics
+	m.FindCount, err = registry.NewMetric("mongo_find_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.FindSeconds, err = registry.NewMetric("mongo_find_seconds", metrics.Trend, metrics.Time)
+	if err != nil {
+		return nil, err
+	}
+	m.FindDocumentCount, err = registry.NewMetric("mongo_find_document_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.FindDocumentBytes, err = registry.NewMetric("mongo_find_document_bytes", metrics.Counter, metrics.Data)
+	if err != nil {
+		return nil, err
+	}
+	m.FindErrorCount, err = registry.NewMetric("mongo_find_error_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+
+	// Write operation metrics - Insert
+	m.InsertCount, err = registry.NewMetric("mongo_insert_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.InsertSeconds, err = registry.NewMetric("mongo_insert_seconds", metrics.Trend, metrics.Time)
+	if err != nil {
+		return nil, err
+	}
+	m.InsertDocumentCount, err = registry.NewMetric("mongo_insert_document_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.InsertDocumentBytes, err = registry.NewMetric("mongo_insert_document_bytes", metrics.Counter, metrics.Data)
+	if err != nil {
+		return nil, err
+	}
+	m.InsertErrorCount, err = registry.NewMetric("mongo_insert_error_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+
+	// Write operation metrics - Update
+	m.UpdateCount, err = registry.NewMetric("mongo_update_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.UpdateSeconds, err = registry.NewMetric("mongo_update_seconds", metrics.Trend, metrics.Time)
+	if err != nil {
+		return nil, err
+	}
+	m.UpdateDocumentCount, err = registry.NewMetric("mongo_update_document_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.UpdateErrorCount, err = registry.NewMetric("mongo_update_error_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+
+	// Write operation metrics - Delete
+	m.DeleteCount, err = registry.NewMetric("mongo_delete_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.DeleteSeconds, err = registry.NewMetric("mongo_delete_seconds", metrics.Trend, metrics.Time)
+	if err != nil {
+		return nil, err
+	}
+	m.DeleteDocumentCount, err = registry.NewMetric("mongo_delete_document_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.DeleteErrorCount, err = registry.NewMetric("mongo_delete_error_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+
+	// Aggregation metrics
+	m.AggregateCount, err = registry.NewMetric("mongo_aggregate_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.AggregateSeconds, err = registry.NewMetric("mongo_aggregate_seconds", metrics.Trend, metrics.Time)
+	if err != nil {
+		return nil, err
+	}
+	m.AggregateStageCount, err = registry.NewMetric("mongo_aggregate_stage_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.AggregateResultCount, err = registry.NewMetric("mongo_aggregate_result_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.AggregateErrorCount, err = registry.NewMetric("mongo_aggregate_error_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+
+	// Bulk operation metrics
+	m.BulkWriteCount, err = registry.NewMetric("mongo_bulk_write_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.BulkWriteSeconds, err = registry.NewMetric("mongo_bulk_write_seconds", metrics.Trend, metrics.Time)
+	if err != nil {
+		return nil, err
+	}
+	m.BulkWriteOpsCount, err = registry.NewMetric("mongo_bulk_write_ops_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+	m.BulkWriteErrorCount, err = registry.NewMetric("mongo_bulk_write_error_count", metrics.Counter)
+	if err != nil {
+		return nil, err
+	}
+
+	// Network metrics
+	m.BytesSent, err = registry.NewMetric("mongo_bytes_sent", metrics.Counter, metrics.Data)
+	if err != nil {
+		return nil, err
+	}
+	m.BytesReceived, err = registry.NewMetric("mongo_bytes_received", metrics.Counter, metrics.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
+
+// ReportConnection reports connection metrics
+func (m *Metrics) ReportConnection(state *metrics.State, duration time.Duration, success bool) {
+	now := time.Now()
+	if success {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.ConnectionCount},
+			Time:       now,
+			Value:      1,
+		})
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.ConnectionSeconds},
+			Time:       now,
+			Value:      metrics.D(duration),
+		})
+	} else {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.ConnectionErrorCount},
+			Time:       now,
+			Value:      1,
+		})
+	}
+}
+
+// ReportInsert reports insert operation metrics
+func (m *Metrics) ReportInsert(state *metrics.State, duration time.Duration, docCount int, bytes int64, err error) {
+	now := time.Now()
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.InsertCount},
+		Time:       now,
+		Value:      1,
+	})
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.InsertSeconds},
+		Time:       now,
+		Value:      metrics.D(duration),
+	})
+	if err != nil {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.InsertErrorCount},
+			Time:       now,
+			Value:      1,
+		})
+	} else {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.InsertDocumentCount},
+			Time:       now,
+			Value:      float64(docCount),
+		})
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.InsertDocumentBytes},
+			Time:       now,
+			Value:      float64(bytes),
+		})
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.BytesSent},
+			Time:       now,
+			Value:      float64(bytes),
+		})
+	}
+}
+
+// ReportFind reports find operation metrics
+func (m *Metrics) ReportFind(state *metrics.State, duration time.Duration, docCount int, bytes int64, err error) {
+	now := time.Now()
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.FindCount},
+		Time:       now,
+		Value:      1,
+	})
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.FindSeconds},
+		Time:       now,
+		Value:      metrics.D(duration),
+	})
+	if err != nil {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.FindErrorCount},
+			Time:       now,
+			Value:      1,
+		})
+	} else {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.FindDocumentCount},
+			Time:       now,
+			Value:      float64(docCount),
+		})
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.FindDocumentBytes},
+			Time:       now,
+			Value:      float64(bytes),
+		})
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.BytesReceived},
+			Time:       now,
+			Value:      float64(bytes),
+		})
+	}
+}
+
+// ReportUpdate reports update operation metrics
+func (m *Metrics) ReportUpdate(state *metrics.State, duration time.Duration, docCount int, err error) {
+	now := time.Now()
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.UpdateCount},
+		Time:       now,
+		Value:      1,
+	})
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.UpdateSeconds},
+		Time:       now,
+		Value:      metrics.D(duration),
+	})
+	if err != nil {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.UpdateErrorCount},
+			Time:       now,
+			Value:      1,
+		})
+	} else {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.UpdateDocumentCount},
+			Time:       now,
+			Value:      float64(docCount),
+		})
+	}
+}
+
+// ReportDelete reports delete operation metrics
+func (m *Metrics) ReportDelete(state *metrics.State, duration time.Duration, docCount int, err error) {
+	now := time.Now()
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.DeleteCount},
+		Time:       now,
+		Value:      1,
+	})
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.DeleteSeconds},
+		Time:       now,
+		Value:      metrics.D(duration),
+	})
+	if err != nil {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.DeleteErrorCount},
+			Time:       now,
+			Value:      1,
+		})
+	} else {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.DeleteDocumentCount},
+			Time:       now,
+			Value:      float64(docCount),
+		})
+	}
+}
+
+// ReportAggregate reports aggregation operation metrics
+func (m *Metrics) ReportAggregate(state *metrics.State, duration time.Duration, stageCount int, resultCount int, bytes int64, err error) {
+	now := time.Now()
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.AggregateCount},
+		Time:       now,
+		Value:      1,
+	})
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.AggregateSeconds},
+		Time:       now,
+		Value:      metrics.D(duration),
+	})
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.AggregateStageCount},
+		Time:       now,
+		Value:      float64(stageCount),
+	})
+	if err != nil {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.AggregateErrorCount},
+			Time:       now,
+			Value:      1,
+		})
+	} else {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.AggregateResultCount},
+			Time:       now,
+			Value:      float64(resultCount),
+		})
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.BytesReceived},
+			Time:       now,
+			Value:      float64(bytes),
+		})
+	}
+}
+
+// ReportBulkWrite reports bulk write operation metrics
+func (m *Metrics) ReportBulkWrite(state *metrics.State, duration time.Duration, opsCount int, err error) {
+	now := time.Now()
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.BulkWriteCount},
+		Time:       now,
+		Value:      1,
+	})
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.BulkWriteSeconds},
+		Time:       now,
+		Value:      metrics.D(duration),
+	})
+	metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+		TimeSeries: metrics.TimeSeries{Metric: m.BulkWriteOpsCount},
+		Time:       now,
+		Value:      float64(opsCount),
+	})
+	if err != nil {
+		metrics.PushIfNotDone(state.Ctx, state, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: m.BulkWriteErrorCount},
+			Time:       now,
+			Value:      1,
+		})
+	}
+}
