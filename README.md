@@ -7,7 +7,10 @@ A k6 extension for interacting with MongoDB while performance testing.
 - **CRUD Operations**: Insert, InsertMany, Find, FindOne, FindAll, UpdateOne, UpdateMany, DeleteOne, DeleteMany
 - **Advanced Operations**: Upsert, FindOneAndUpdate, Aggregate, Distinct, CountDocuments
 - **Bulk Operations**: BulkWrite for mixed insert/update/delete operations
-- **Collection Management**: DropCollection
+- **Index Management**: CreateIndex, DropIndex, ListIndexes
+- **Change Streams**: Watch for real-time collection changes (requires replica set)
+- **Transactions**: Session-based transaction support with Insert, FindOne, UpdateOne, DeleteOne
+- **Database Management**: DropDatabase, ListCollections, DropCollection
 - **Flexible Filters**: Complex query support for all filter parameters
 - **Connection Management**: Automatic connection verification with timeout handling
 - **Performance**: Built-in operation timeouts and cursor management
@@ -199,6 +202,68 @@ export default () => {
 }
 ```
 
+### Index Management Example
+
+```js
+import xk6_mongo from 'k6/x/mongo';
+
+const client = xk6_mongo.newClient('mongodb://localhost:27017');
+
+export default () => {
+    // Create a unique index
+    const indexName = client.createIndex("testdb", "users", { email: 1 }, { unique: true });
+    console.log(`Created index: ${indexName}`);
+
+    // List all indexes
+    const indexes = client.listIndexes("testdb", "users");
+    console.log(`Indexes: ${JSON.stringify(indexes)}`);
+
+    // Drop an index
+    client.dropIndex("testdb", "users", indexName);
+}
+```
+
+### Transaction Example
+
+Transactions require a MongoDB replica set or sharded cluster.
+
+```js
+import xk6_mongo from 'k6/x/mongo';
+
+const client = xk6_mongo.newClient('mongodb://localhost:27017');
+
+export default () => {
+    const session = client.startSession();
+    try {
+        session.startTransaction();
+        session.insert("testdb", "accounts", { _id: "acc-1", balance: 1000 });
+        session.updateOne("testdb", "accounts", { _id: "acc-1" }, { $inc: { balance: -200 } });
+        session.commitTransaction();
+    } catch (e) {
+        session.abortTransaction();
+    } finally {
+        session.endSession();
+    }
+}
+```
+
+### Database Operations Example
+
+```js
+import xk6_mongo from 'k6/x/mongo';
+
+const client = xk6_mongo.newClient('mongodb://localhost:27017');
+
+export default () => {
+    // List all collections
+    const collections = client.listCollections("testdb");
+    console.log(`Collections: ${JSON.stringify(collections.map(c => c.name))}`);
+
+    // Drop database (use with caution!)
+    client.dropDatabase("tempdb");
+}
+```
+
 ## API Reference
 
 ### Connection Methods
@@ -229,8 +294,33 @@ export default () => {
 - `countDocuments(db, collection, filter)` - Count documents matching filter
 - `bulkWrite(db, collection, operations)` - Execute multiple write operations in one call
 
-### Collection Management
+### Index Management
 
+- `createIndex(db, collection, keys, options)` - Create an index (options: `unique`, `name`, `sparse`, `expire_after_seconds`)
+- `dropIndex(db, collection, name)` - Drop an index by name
+- `listIndexes(db, collection)` - List all indexes on a collection
+
+### Change Streams
+
+- `watch(db, collection, pipeline, durationMs)` - Watch for changes on a collection for the specified duration (requires replica set)
+
+### Transaction Support
+
+- `startSession()` - Start a new session for transaction support
+- **Session methods:**
+  - `session.startTransaction()` - Begin a transaction
+  - `session.commitTransaction()` - Commit the active transaction
+  - `session.abortTransaction()` - Abort the active transaction
+  - `session.endSession()` - End the session and release resources
+  - `session.insert(db, collection, document)` - Insert within the transaction
+  - `session.findOne(db, collection, filter)` - Find within the transaction
+  - `session.updateOne(db, collection, filter, update)` - Update within the transaction
+  - `session.deleteOne(db, collection, filter)` - Delete within the transaction
+
+### Database Management
+
+- `dropDatabase(db)` - Drop an entire database
+- `listCollections(db)` - List all collections in a database
 - `dropCollection(db, collection)` - Drop a collection
 
 ## Performance Tips

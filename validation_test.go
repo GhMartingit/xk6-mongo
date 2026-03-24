@@ -3,6 +3,7 @@ package xk6_mongo
 import (
 	"testing"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -199,6 +200,238 @@ func TestBulkWriteValidation(t *testing.T) {
 		_, _, err := client.BulkWrite("db", "col", []mongo.WriteModel{})
 		if err == nil {
 			t.Error("Expected error for empty operations array")
+		}
+	})
+}
+
+func TestCreateIndexValidation(t *testing.T) {
+	client := &Client{}
+
+	t.Run("nil keys", func(t *testing.T) {
+		_, err := client.CreateIndex("db", "col", nil, nil)
+		if err != errKeysNil {
+			t.Errorf("Expected errKeysNil, got %v", err)
+		}
+	})
+
+	t.Run("empty database", func(t *testing.T) {
+		_, err := client.CreateIndex("", "col", bson.M{"field": 1}, nil)
+		if err == nil {
+			t.Error("Expected error for empty database")
+		}
+	})
+
+	t.Run("empty collection", func(t *testing.T) {
+		_, err := client.CreateIndex("db", "", bson.M{"field": 1}, nil)
+		if err == nil {
+			t.Error("Expected error for empty collection")
+		}
+	})
+}
+
+func TestDropIndexValidation(t *testing.T) {
+	client := &Client{}
+
+	t.Run("empty index name", func(t *testing.T) {
+		err := client.DropIndex("db", "col", "")
+		if err != errIndexNameEmpty {
+			t.Errorf("Expected errIndexNameEmpty, got %v", err)
+		}
+	})
+
+	t.Run("empty database", func(t *testing.T) {
+		err := client.DropIndex("", "col", "idx_name")
+		if err == nil {
+			t.Error("Expected error for empty database")
+		}
+	})
+}
+
+func TestListIndexesValidation(t *testing.T) {
+	client := &Client{}
+
+	t.Run("empty database", func(t *testing.T) {
+		_, err := client.ListIndexes("", "col")
+		if err == nil {
+			t.Error("Expected error for empty database")
+		}
+	})
+
+	t.Run("empty collection", func(t *testing.T) {
+		_, err := client.ListIndexes("db", "")
+		if err == nil {
+			t.Error("Expected error for empty collection")
+		}
+	})
+}
+
+func TestDropDatabaseValidation(t *testing.T) {
+	client := &Client{}
+
+	t.Run("empty database", func(t *testing.T) {
+		err := client.DropDatabase("")
+		if err != errDatabaseEmpty {
+			t.Errorf("Expected errDatabaseEmpty, got %v", err)
+		}
+	})
+}
+
+func TestListCollectionsValidation(t *testing.T) {
+	client := &Client{}
+
+	t.Run("empty database", func(t *testing.T) {
+		_, err := client.ListCollections("")
+		if err != errDatabaseEmpty {
+			t.Errorf("Expected errDatabaseEmpty, got %v", err)
+		}
+	})
+}
+
+func TestNormalizeKeys(t *testing.T) {
+	t.Run("simple map", func(t *testing.T) {
+		input := map[string]any{"max_pool_size": 100, "min_pool_size": 10}
+		result := normalizeKeys(input).(map[string]any)
+		if _, ok := result["MaxPoolSize"]; !ok {
+			t.Error("Expected MaxPoolSize key after normalization")
+		}
+		if _, ok := result["MinPoolSize"]; !ok {
+			t.Error("Expected MinPoolSize key after normalization")
+		}
+	})
+
+	t.Run("nested map", func(t *testing.T) {
+		input := map[string]any{
+			"server_api_options": map[string]any{
+				"server_api_version": "1",
+			},
+		}
+		result := normalizeKeys(input).(map[string]any)
+		nested, ok := result["ServerAPIOptions"].(map[string]any)
+		if !ok {
+			t.Fatal("Expected nested map after normalization")
+		}
+		if _, ok := nested["ServerAPIVersion"]; !ok {
+			t.Error("Expected ServerAPIVersion key in nested map")
+		}
+	})
+
+	t.Run("bson.M input", func(t *testing.T) {
+		input := bson.M{"app_name": "test"}
+		result := normalizeKeys(input).(map[string]any)
+		if _, ok := result["AppName"]; !ok {
+			t.Error("Expected AppName key after normalization")
+		}
+	})
+
+	t.Run("slice input", func(t *testing.T) {
+		input := []any{
+			map[string]any{"key_name": "value"},
+		}
+		result := normalizeKeys(input).([]any)
+		inner := result[0].(map[string]any)
+		if _, ok := inner["KeyName"]; !ok {
+			t.Error("Expected KeyName key after normalization of array element")
+		}
+	})
+
+	t.Run("primitive input", func(t *testing.T) {
+		result := normalizeKeys("hello")
+		if result != "hello" {
+			t.Errorf("Expected primitive to pass through, got %v", result)
+		}
+	})
+}
+
+func TestHasOperatorInKeysD(t *testing.T) {
+	t.Run("with operator", func(t *testing.T) {
+		d := bson.D{{Key: "$set", Value: bson.M{"name": "test"}}}
+		if !hasOperatorInKeysD(d) {
+			t.Error("Expected true for document with $ operator")
+		}
+	})
+
+	t.Run("without operator", func(t *testing.T) {
+		d := bson.D{{Key: "name", Value: "test"}, {Key: "age", Value: 30}}
+		if hasOperatorInKeysD(d) {
+			t.Error("Expected false for document without $ operator")
+		}
+	})
+
+	t.Run("empty document", func(t *testing.T) {
+		d := bson.D{}
+		if hasOperatorInKeysD(d) {
+			t.Error("Expected false for empty document")
+		}
+	})
+
+	t.Run("mixed keys", func(t *testing.T) {
+		d := bson.D{{Key: "name", Value: "test"}, {Key: "$inc", Value: bson.M{"count": 1}}}
+		if !hasOperatorInKeysD(d) {
+			t.Error("Expected true when at least one key has $ operator")
+		}
+	})
+}
+
+func TestClientOptionsFromMap(t *testing.T) {
+	t.Run("basic options", func(t *testing.T) {
+		raw := map[string]any{
+			"app_name": "test-app",
+		}
+		opts, err := clientOptionsFromMap("mongodb://localhost:27017", raw)
+		if err != nil {
+			t.Fatalf("clientOptionsFromMap failed: %v", err)
+		}
+		if opts == nil {
+			t.Fatal("Expected non-nil client options")
+		}
+	})
+
+	t.Run("empty map", func(t *testing.T) {
+		opts, err := clientOptionsFromMap("mongodb://localhost:27017", map[string]any{})
+		if err != nil {
+			t.Fatalf("clientOptionsFromMap failed: %v", err)
+		}
+		if opts == nil {
+			t.Fatal("Expected non-nil client options")
+		}
+	})
+}
+
+func TestPrepareClientOptions(t *testing.T) {
+	t.Run("nil opts", func(t *testing.T) {
+		opts, err := prepareClientOptions("mongodb://localhost:27017", nil)
+		if err != nil {
+			t.Fatalf("prepareClientOptions failed: %v", err)
+		}
+		if opts == nil {
+			t.Fatal("Expected non-nil client options")
+		}
+	})
+
+	t.Run("map opts", func(t *testing.T) {
+		opts, err := prepareClientOptions("mongodb://localhost:27017", map[string]any{"app_name": "test"})
+		if err != nil {
+			t.Fatalf("prepareClientOptions failed: %v", err)
+		}
+		if opts == nil {
+			t.Fatal("Expected non-nil client options")
+		}
+	})
+
+	t.Run("bson.M opts", func(t *testing.T) {
+		opts, err := prepareClientOptions("mongodb://localhost:27017", bson.M{"app_name": "test"})
+		if err != nil {
+			t.Fatalf("prepareClientOptions failed: %v", err)
+		}
+		if opts == nil {
+			t.Fatal("Expected non-nil client options")
+		}
+	})
+
+	t.Run("unsupported type", func(t *testing.T) {
+		_, err := prepareClientOptions("mongodb://localhost:27017", "invalid")
+		if err == nil {
+			t.Error("Expected error for unsupported type")
 		}
 	})
 }

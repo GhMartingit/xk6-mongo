@@ -37,6 +37,12 @@ type UpsertOneModel struct {
 	Update any `json:"update"`
 }
 
+// Session wraps a mongo.Session for transaction support.
+type Session struct {
+	session mongo.Session
+	client  *Client
+}
+
 const (
 	defaultConnectionTimeout = 10 * time.Second
 	defaultOperationTimeout  = 30 * time.Second
@@ -220,6 +226,13 @@ const (
 	errDroppingCollection    = "Error while dropping the collection: %v"
 	errCountingDocuments     = "Error while counting documents: %v"
 	errFindingAndUpdating    = "Error while finding and updating document: %v"
+	errCreatingIndex         = "Error while creating index: %v"
+	errDroppingIndex         = "Error while dropping index: %v"
+	errListingIndexes        = "Error while listing indexes: %v"
+	errWatchingCollection    = "Error while watching collection: %v"
+	errStartingSession       = "Error while starting session: %v"
+	errDroppingDatabase      = "Error while dropping database: %v"
+	errListingCollections    = "Error while listing collections: %v"
 )
 
 var (
@@ -227,7 +240,10 @@ var (
 	errDocumentNil = errors.New("document cannot be nil")
 	errPipelineNil = errors.New("pipeline cannot be nil")
 	errDocsEmpty   = errors.New("documents array cannot be empty")
-	errLimitNeg    = errors.New("limit cannot be negative")
+	errLimitNeg       = errors.New("limit cannot be negative")
+	errIndexNameEmpty = errors.New("index name cannot be empty")
+	errKeysNil        = errors.New("index keys cannot be nil")
+	errDatabaseEmpty  = errors.New("database name cannot be empty")
 )
 
 func (c *Client) Find(database string, collection string, filter any, sort any, limit int64) ([]bson.M, error) {
@@ -596,6 +612,287 @@ func (c *Client) BulkWrite(database string, collection string, operations []mong
 	}
 
 	return result.InsertedCount, result.ModifiedCount, nil
+}
+
+// CreateIndex creates an index on a collection and returns the index name.
+func (c *Client) CreateIndex(database string, collection string, keys any, indexOptions map[string]any) (string, error) {
+	if keys == nil {
+		return "", errKeysNil
+	}
+
+	col, err := c.getCollection(database, collection)
+	if err != nil {
+		log.Printf(errValidatingCollection, err)
+		return "", err
+	}
+
+	ctx, cancel := c.getContext()
+	defer cancel()
+
+	opts := options.Index()
+	if indexOptions != nil {
+		if unique, ok := indexOptions["unique"].(bool); ok {
+			opts.SetUnique(unique)
+		}
+		if name, ok := indexOptions["name"].(string); ok {
+			opts.SetName(name)
+		}
+		if sparse, ok := indexOptions["sparse"].(bool); ok {
+			opts.SetSparse(sparse)
+		}
+		if expireAfterSeconds, ok := indexOptions["expire_after_seconds"].(int32); ok {
+			opts.SetExpireAfterSeconds(expireAfterSeconds)
+		}
+	}
+
+	model := mongo.IndexModel{
+		Keys:    keys,
+		Options: opts,
+	}
+
+	name, err := col.Indexes().CreateOne(ctx, model)
+	if err != nil {
+		log.Printf(errCreatingIndex, err)
+		return "", err
+	}
+	log.Printf("Index created successfully: %s", name)
+	return name, nil
+}
+
+// DropIndex drops an index from a collection by name.
+func (c *Client) DropIndex(database string, collection string, name string) error {
+	if name == "" {
+		return errIndexNameEmpty
+	}
+
+	col, err := c.getCollection(database, collection)
+	if err != nil {
+		log.Printf(errValidatingCollection, err)
+		return err
+	}
+
+	ctx, cancel := c.getContext()
+	defer cancel()
+
+	_, err = col.Indexes().DropOne(ctx, name)
+	if err != nil {
+		log.Printf(errDroppingIndex, err)
+		return err
+	}
+	log.Printf("Index dropped successfully: %s", name)
+	return nil
+}
+
+// ListIndexes returns all indexes on a collection.
+func (c *Client) ListIndexes(database string, collection string) ([]bson.M, error) {
+	col, err := c.getCollection(database, collection)
+	if err != nil {
+		log.Printf(errValidatingCollection, err)
+		return nil, err
+	}
+
+	ctx, cancel := c.getContext()
+	defer cancel()
+
+	cursor, err := col.Indexes().List(ctx)
+	if err != nil {
+		log.Printf(errListingIndexes, err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var results []bson.M
+	if err = cursor.All(ctx, &results); err != nil {
+		log.Printf(errDecodingDocuments, err)
+		return nil, err
+	}
+	return results, nil
+}
+
+// Watch opens a change stream on a collection and collects events for the specified duration.
+// Change streams require a MongoDB replica set or sharded cluster.
+func (c *Client) Watch(database string, collection string, pipeline any, durationMs int64) ([]bson.M, error) {
+	col, err := c.getCollection(database, collection)
+	if err != nil {
+		log.Printf(errValidatingCollection, err)
+		return nil, err
+	}
+
+	if pipeline == nil {
+		pipeline = []bson.M{}
+	}
+
+	watchDuration := time.Duration(durationMs) * time.Millisecond
+	if watchDuration <= 0 {
+		watchDuration = 5 * time.Second
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), watchDuration)
+	defer cancel()
+
+	cs, err := col.Watch(ctx, pipeline)
+	if err != nil {
+		log.Printf(errWatchingCollection, err)
+		return nil, err
+	}
+	defer cs.Close(ctx)
+
+	var results []bson.M
+	for cs.Next(ctx) {
+		var event bson.M
+		if err := cs.Decode(&event); err != nil {
+			continue
+		}
+		results = append(results, event)
+	}
+
+	return results, nil
+}
+
+// StartSession creates a new session for transaction support.
+func (c *Client) StartSession() (*Session, error) {
+	session, err := c.client.StartSession()
+	if err != nil {
+		log.Printf(errStartingSession, err)
+		return nil, err
+	}
+	return &Session{session: session, client: c}, nil
+}
+
+// StartTransaction starts a new transaction on the session.
+func (s *Session) StartTransaction() error {
+	return s.session.StartTransaction()
+}
+
+// CommitTransaction commits the active transaction.
+func (s *Session) CommitTransaction() error {
+	ctx, cancel := s.client.getContext()
+	defer cancel()
+	return s.session.CommitTransaction(ctx)
+}
+
+// AbortTransaction aborts the active transaction.
+func (s *Session) AbortTransaction() error {
+	ctx, cancel := s.client.getContext()
+	defer cancel()
+	return s.session.AbortTransaction(ctx)
+}
+
+// EndSession ends the session and releases resources.
+func (s *Session) EndSession() {
+	s.session.EndSession(context.Background())
+}
+
+// Insert inserts a document within the session's transaction context.
+func (s *Session) Insert(database string, collection string, doc any) error {
+	if doc == nil {
+		return errDocumentNil
+	}
+	col, err := s.client.getCollection(database, collection)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := s.client.getContext()
+	defer cancel()
+	return mongo.WithSession(ctx, s.session, func(sc mongo.SessionContext) error {
+		_, err := col.InsertOne(sc, doc)
+		return err
+	})
+}
+
+// FindOne finds a single document within the session's transaction context.
+func (s *Session) FindOne(database string, collection string, filter any) (bson.M, error) {
+	col, err := s.client.getCollection(database, collection)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := s.client.getContext()
+	defer cancel()
+	var result bson.M
+	err = mongo.WithSession(ctx, s.session, func(sc mongo.SessionContext) error {
+		return col.FindOne(sc, filter).Decode(&result)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// UpdateOne updates a single document within the session's transaction context.
+func (s *Session) UpdateOne(database string, collection string, filter any, data any) error {
+	if filter == nil {
+		return errFilterNil
+	}
+	col, err := s.client.getCollection(database, collection)
+	if err != nil {
+		return err
+	}
+	update, err := prepareUpdateDocument(data)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := s.client.getContext()
+	defer cancel()
+	return mongo.WithSession(ctx, s.session, func(sc mongo.SessionContext) error {
+		_, err := col.UpdateOne(sc, filter, update)
+		return err
+	})
+}
+
+// DeleteOne deletes a single document within the session's transaction context.
+func (s *Session) DeleteOne(database string, collection string, filter any) error {
+	col, err := s.client.getCollection(database, collection)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := s.client.getContext()
+	defer cancel()
+	return mongo.WithSession(ctx, s.session, func(sc mongo.SessionContext) error {
+		_, err := col.DeleteOne(sc, filter)
+		return err
+	})
+}
+
+// DropDatabase drops an entire database.
+func (c *Client) DropDatabase(database string) error {
+	if database == "" {
+		return errDatabaseEmpty
+	}
+
+	ctx, cancel := c.getContext()
+	defer cancel()
+
+	err := c.client.Database(database).Drop(ctx)
+	if err != nil {
+		log.Printf(errDroppingDatabase, err)
+		return err
+	}
+	log.Printf("Database dropped successfully: %s", database)
+	return nil
+}
+
+// ListCollections returns all collections in a database.
+func (c *Client) ListCollections(database string) ([]bson.M, error) {
+	if database == "" {
+		return nil, errDatabaseEmpty
+	}
+
+	ctx, cancel := c.getContext()
+	defer cancel()
+
+	cursor, err := c.client.Database(database).ListCollections(ctx, bson.D{})
+	if err != nil {
+		log.Printf(errListingCollections, err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var results []bson.M
+	if err = cursor.All(ctx, &results); err != nil {
+		log.Printf(errDecodingDocuments, err)
+		return nil, err
+	}
+	return results, nil
 }
 
 func prepareClientOptions(connURI string, opts any) (*options.ClientOptions, error) {

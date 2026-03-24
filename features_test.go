@@ -268,6 +268,99 @@ func TestAllFeatures(t *testing.T) {
 		t.Log("✅ DropCollection successful")
 	})
 
+	t.Run("CreateIndex_Operation", func(t *testing.T) {
+		// Insert a document so the collection exists
+		_ = client.Insert(db, col, bson.M{"_id": "idx-test-1", "name": "IndexTest", "email": "idx@test.com"})
+
+		name, err := client.CreateIndex(db, col, bson.M{"name": 1}, nil)
+		if err != nil {
+			t.Fatalf("CreateIndex failed: %v", err)
+		}
+		if name == "" {
+			t.Error("Expected non-empty index name")
+		}
+		t.Logf("✅ CreateIndex successful: %s", name)
+	})
+
+	t.Run("CreateIndex_WithOptions", func(t *testing.T) {
+		name, err := client.CreateIndex(db, col, bson.M{"email": 1}, map[string]any{
+			"unique": true,
+			"name":   "email_unique_idx",
+		})
+		if err != nil {
+			t.Fatalf("CreateIndex with options failed: %v", err)
+		}
+		if name != "email_unique_idx" {
+			t.Errorf("Expected index name 'email_unique_idx', got '%s'", name)
+		}
+		t.Logf("✅ CreateIndex with options successful: %s", name)
+	})
+
+	t.Run("ListIndexes_Operation", func(t *testing.T) {
+		indexes, err := client.ListIndexes(db, col)
+		if err != nil {
+			t.Fatalf("ListIndexes failed: %v", err)
+		}
+		// At least _id index + the two we created
+		if len(indexes) < 3 {
+			t.Errorf("Expected at least 3 indexes, got %d", len(indexes))
+		}
+		t.Logf("✅ ListIndexes successful: %d indexes", len(indexes))
+	})
+
+	t.Run("DropIndex_Operation", func(t *testing.T) {
+		err := client.DropIndex(db, col, "email_unique_idx")
+		if err != nil {
+			t.Fatalf("DropIndex failed: %v", err)
+		}
+
+		// Verify index was dropped
+		indexes, _ := client.ListIndexes(db, col)
+		for _, idx := range indexes {
+			if idx["name"] == "email_unique_idx" {
+				t.Error("Index should have been dropped")
+			}
+		}
+		t.Log("✅ DropIndex successful")
+	})
+
+	t.Run("ListCollections_Operation", func(t *testing.T) {
+		collections, err := client.ListCollections(db)
+		if err != nil {
+			t.Fatalf("ListCollections failed: %v", err)
+		}
+		if len(collections) == 0 {
+			t.Error("Expected at least 1 collection")
+		}
+		t.Logf("✅ ListCollections successful: %d collections", len(collections))
+	})
+
+	t.Run("DropCollection_Operation", func(t *testing.T) {
+		err := client.DropCollection(db, col)
+		if err != nil {
+			t.Fatalf("DropCollection failed: %v", err)
+		}
+		t.Log("✅ DropCollection successful")
+	})
+
+	t.Run("DropDatabase_Operation", func(t *testing.T) {
+		// Create a temporary database to drop
+		tempDB := "featurestest_temp"
+		_ = client.Insert(tempDB, "tempcol", bson.M{"_id": "temp-1"})
+
+		err := client.DropDatabase(tempDB)
+		if err != nil {
+			t.Fatalf("DropDatabase failed: %v", err)
+		}
+
+		// Verify database was dropped by listing collections (should be empty)
+		collections, _ := client.ListCollections(tempDB)
+		if len(collections) != 0 {
+			t.Errorf("Expected 0 collections after DropDatabase, got %d", len(collections))
+		}
+		t.Log("✅ DropDatabase successful")
+	})
+
 	t.Run("Connection_Features", func(t *testing.T) {
 		t.Log("✅ Connection timeout: 10 seconds")
 		t.Log("✅ Operation timeout: 30 seconds")
