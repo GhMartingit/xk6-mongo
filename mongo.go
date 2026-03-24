@@ -236,10 +236,10 @@ const (
 )
 
 var (
-	errFilterNil   = errors.New("filter cannot be nil")
-	errDocumentNil = errors.New("document cannot be nil")
-	errPipelineNil = errors.New("pipeline cannot be nil")
-	errDocsEmpty   = errors.New("documents array cannot be empty")
+	errFilterNil      = errors.New("filter cannot be nil")
+	errDocumentNil    = errors.New("document cannot be nil")
+	errPipelineNil    = errors.New("pipeline cannot be nil")
+	errDocsEmpty      = errors.New("documents array cannot be empty")
 	errLimitNeg       = errors.New("limit cannot be negative")
 	errIndexNameEmpty = errors.New("index name cannot be empty")
 	errKeysNil        = errors.New("index keys cannot be nil")
