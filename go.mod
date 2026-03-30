@@ -1,11 +1,9 @@
 module github.com/GhMartingit/xk6-mongo
 
-go 1.24.0
-
-toolchain go1.24.2
+go 1.25.0
 
 require (
-	go.k6.io/k6 v1.6.1
+	go.k6.io/k6 v1.7.1
 	go.mongodb.org/mongo-driver v1.17.9
 )
 
@@ -22,10 +20,10 @@ require (
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/pprof v0.0.0-20250903194437-c28834ac2320 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/grafana/sobek v0.0.0-20260121195222-d8d9202018c5 // indirect
+	github.com/grafana/sobek v0.0.0-20260219184149-bdae4a158e94 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.2 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/klauspost/compress v1.18.2 // indirect
+	github.com/klauspost/compress v1.18.4 // indirect
 	github.com/mailru/easyjson v0.9.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
