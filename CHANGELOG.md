@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
   - Projection (select specific fields)
   - Skip (pagination)
   - Limit and sort
+- **ReplaceOne**: Replace a single document entirely (replaces all fields, unlike UpdateOne which only modifies specific fields)
 
 #### Error Handling
 - Consistent error message constants
