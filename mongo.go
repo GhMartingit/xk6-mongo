@@ -305,6 +305,9 @@ func (c *Client) FindWithOptions(database string, collection string, filter any,
 	if projection, ok := findOptions["projection"]; ok {
 		opts.SetProjection(projection)
 	}
+	if hint, ok := findOptions["hint"]; ok {
+		opts.SetHint(hint)
+	}
 
 	cur, err := col.Find(ctx, filter, opts)
 	if err != nil {

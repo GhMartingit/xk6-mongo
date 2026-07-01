@@ -296,12 +296,14 @@ func (c *Client) Insert(database, collection string, doc any) error {
 //   - batch_size (int32): Number of documents per batch
 //   - sort: Sort order specification
 //   - projection: Field projection specification
+//   - hint: Index hint specification
 //
 // Example:
 //   options := map[string]any{
 //       "limit": 100,
 //       "batch_size": 50,
 //       "sort": bson.M{"createdAt": -1},
+//       "hint": bson.M{"createdAt": -1},
 //   }
 //   results, err := client.FindWithOptions("db", "col", filter, options)
 func (c *Client) FindWithOptions(database, collection string, filter any, options map[string]any) ([]bson.M, error) {

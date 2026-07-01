@@ -167,7 +167,8 @@ export default () => {
         skip: 10,
         batch_size: 50,  // Process results in batches of 50
         sort: { createdAt: -1 },
-        projection: { name: 1, email: 1, _id: 0 }  // Only return specific fields
+        projection: { name: 1, email: 1, _id: 0 },  // Only return specific fields
+        hint: { active: 1, createdAt: -1 }  // Use a specific index
     };
 
     const results = client.findWithOptions(
@@ -277,7 +278,7 @@ export default () => {
 - `insert(db, collection, document)` - Insert a single document
 - `insertMany(db, collection, documents)` - Insert multiple documents
 - `find(db, collection, filter, sort, limit)` - Find documents with basic options
-- `findWithOptions(db, collection, filter, options)` - Find with advanced options (batch size, projection, skip)
+- `findWithOptions(db, collection, filter, options)` - Find with advanced options (batch size, projection, skip, hint)
 - `findOne(db, collection, filter)` - Find a single document
 - `findAll(db, collection)` - Find all documents in a collection
 - `updateOne(db, collection, filter, update)` - Update a single document
