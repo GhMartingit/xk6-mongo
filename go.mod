@@ -2,6 +2,8 @@ module github.com/GhMartingit/xk6-mongo
 
 go 1.26.0
 
+toolchain go1.27.2
+
 require (
 	go.k6.io/k6 v1.8.2
 	go.mongodb.org/mongo-driver v1.17.9
