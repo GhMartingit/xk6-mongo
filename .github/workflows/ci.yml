@@ -108,3 +108,44 @@ jobs:
 
       - name: Verify binary
         run: ./k6 version
+
+  e2e:
+    name: E2E (k6 v1 + v2)
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27'
+
+      - name: Install xk6
+        run: go install go.k6.io/xk6/cmd/xk6@latest
+
+      - name: Build and run against k6 v1
+        run: |
+          v1=$(go list -m -f '{{.Version}}' go.k6.io/k6)
+          echo "Building k6 $v1 ..."
+          xk6 build "$v1" --output ./k6-v1 --with github.com/GhMartingit/xk6-mongo=.
+          ./k6-v1 version
+          ./k6-v1 run examples/smoke-test.js
+
+      - name: Build and run against k6 v2
+        run: |
+          v2=$(go list -m -f '{{.Version}}' go.k6.io/k6/v2)
+          echo "Building k6 $v2 ..."
+          xk6 build "$v2" --output ./k6-v2 --with github.com/GhMartingit/xk6-mongo=.
+          ./k6-v2 version
+          ./k6-v2 run examples/smoke-test.js
