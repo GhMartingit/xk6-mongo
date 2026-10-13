@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **k6 v2 support**: the extension now registers under both the k6 v1 (`go.k6.io/k6`) and k6 v2 (`go.k6.io/k6/v2`) module systems, so a single codebase works with `xk6 build` against either major version.
+
 ## [1.3.0] - 2026-10-13
 
 ### Added
