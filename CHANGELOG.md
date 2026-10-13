@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-13
+
 ### Added
 
 #### Connection Management
@@ -29,6 +31,7 @@ All notable changes to this project will be documented in this file.
   - Projection (select specific fields)
   - Skip (pagination)
   - Limit and sort
+  - Index hint specification
 - **ReplaceOne**: Replace a single document entirely (replaces all fields, unlike UpdateOne which only modifies specific fields)
 
 #### Error Handling
@@ -51,11 +54,17 @@ All notable changes to this project will be documented in this file.
 
 #### CI/CD
 - GitHub Actions workflow for automated testing
-- Multi-version Go testing (1.22, 1.23, 1.24)
+- Multi-version Go testing (1.24, 1.25, 1.26)
 - MongoDB service container for integration tests
 - golangci-lint integration
 - Code coverage reporting with Codecov
 - Automated build verification
+- Dedicated `govulncheck` job to catch reachable vulnerabilities in CI
+
+#### Dependencies
+- Updated `go.k6.io/k6` to v1.8.2
+- Patched reachable CVEs in `grpc`, `golang.org/x/net`, `golang.org/x/text`, and `go.opentelemetry.io/otel` (+exporters)
+- Pinned Go toolchain to 1.27.2
 
 #### Documentation
 - Removed duplicate content from README
