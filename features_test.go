@@ -82,11 +82,19 @@ func TestAllFeatures(t *testing.T) {
 	})
 
 	t.Run("FindWithOptions_Operation", func(t *testing.T) {
+		indexName, err := client.CreateIndex(db, col, bson.M{"age": -1}, map[string]any{
+			"name": "age_desc_idx",
+		})
+		if err != nil {
+			t.Fatalf("CreateIndex for hinted find failed: %v", err)
+		}
+
 		options := map[string]any{
 			"limit":      int64(2),
 			"skip":       int64(1),
 			"sort":       bson.M{"age": -1},
 			"projection": bson.M{"name": 1, "age": 1, "_id": 0},
+			"hint":       indexName,
 		}
 
 		results, err := client.FindWithOptions(db, col, bson.M{"active": true}, options)
