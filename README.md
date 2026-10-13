@@ -36,6 +36,15 @@ To build a custom `k6` binary with this extension, first ensure you have the pre
 
    This will create a k6 binary that includes the xk6-mongo extension in your local folder. This k6 binary can now run a k6 test.
 
+### k6 v1 and v2
+
+This extension registers itself with both the k6 v1 (`go.k6.io/k6`) and k6 v2 (`go.k6.io/k6/v2`) module systems, so it works with either major version — `xk6 build` picks up whichever one it links against. To target a specific k6 version:
+
+```bash
+xk6 build v1.8.2 --with github.com/GhMartingit/xk6-mongo   # k6 v1.x
+xk6 build v2.3.0 --with github.com/GhMartingit/xk6-mongo   # k6 v2.x
+```
+
 ### Development
 
 To make development a little smoother, use the `Makefile` in the root folder. The default target will format your code, run tests, and create a `k6` binary with your local code rather than from GitHub.

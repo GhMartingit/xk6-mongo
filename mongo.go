@@ -12,13 +12,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	k6modules "go.k6.io/k6/js/modules"
+	k6modulesv1 "go.k6.io/k6/js/modules"
+	k6modulesv2 "go.k6.io/k6/v2/js/modules"
 )
 
 // Register the extension on module initialization, available to
-// import from JS as "k6/x/mongo".
+// import from JS as "k6/x/mongo". Registered under both the k6 v1
+// and v2 module registries since xk6 links against exactly one of
+// them per build; whichever doesn't match the linked k6 core simply
+// stays unused.
 func init() {
-	k6modules.Register("k6/x/mongo", new(Mongo))
+	k6modulesv1.Register("k6/x/mongo", new(Mongo))
+	k6modulesv2.Register("k6/x/mongo", new(Mongo))
 }
 
 // Mongo is the k6 extension for a Mongo client.
