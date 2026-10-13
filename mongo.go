@@ -990,6 +990,8 @@ func toPascalCase(input string) string {
 	return strings.Join(segments, "")
 }
 
+const setOperator = "$set"
+
 func prepareUpdateDocument(data any) (any, error) {
 	if data == nil {
 		return nil, fmt.Errorf("update document cannot be nil")
@@ -1001,13 +1003,13 @@ func prepareUpdateDocument(data any) (any, error) {
 
 	switch doc := data.(type) {
 	case bson.D:
-		return bson.D{{Key: "$set", Value: doc}}, nil
+		return bson.D{{Key: setOperator, Value: doc}}, nil
 	case bson.M:
-		return bson.M{"$set": doc}, nil
+		return bson.M{setOperator: doc}, nil
 	case map[string]any:
-		return bson.M{"$set": doc}, nil
+		return bson.M{setOperator: doc}, nil
 	case bson.A:
-		return bson.M{"$set": doc}, nil
+		return bson.M{setOperator: doc}, nil
 	default:
 		bytes, err := bson.Marshal(doc)
 		if err != nil {
@@ -1017,7 +1019,7 @@ func prepareUpdateDocument(data any) (any, error) {
 		if err := bson.Unmarshal(bytes, &generic); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal update document: %w", err)
 		}
-		return bson.M{"$set": generic}, nil
+		return bson.M{setOperator: generic}, nil
 	}
 }
 
