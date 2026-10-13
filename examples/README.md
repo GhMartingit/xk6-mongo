@@ -34,16 +34,17 @@ The scripts are independent, but this order produces readable output:
 2. `test-insert.js` (insert a single document)
 3. `test-find.js` (find a document)
 4. `test-update.js` (update a single document)
-5. `test-findoneandupdate.js` (update + return updated doc; logs the updated document)
-6. `test-insertmany.js` (insert a batch of documents)
-7. `test-updatemany.js` (bulk update documents)
-8. `test-countdocuments.js` (count matching documents)
-9. `test-findall.js` (list all documents in collection)
-10. `test-distinct.js` (distinct values for a field)
-11. `test-aggregate.js` (aggregation pipeline)
-12. `test-deletemany.js` (delete many)
-13. `test-delete.js` (delete one)
-14. `test-dropcollection.js` (clean up)
+5. `test-replace.js` (replace a single document entirely)
+6. `test-findoneandupdate.js` (update + return updated doc; logs the updated document)
+7. `test-insertmany.js` (insert a batch of documents)
+8. `test-updatemany.js` (bulk update documents)
+9. `test-countdocuments.js` (count matching documents)
+10. `test-findall.js` (list all documents in collection)
+11. `test-distinct.js` (distinct values for a field)
+12. `test-aggregate.js` (aggregation pipeline)
+13. `test-deletemany.js` (delete many)
+14. `test-delete.js` (delete one)
+15. `test-dropcollection.js` (clean up)
 
 Run a script like this:
 
@@ -61,3 +62,4 @@ Run a script like this:
   ```
 
 - Update helpers accept either a full update document with operators (e.g., `{ $set: { ... } }`) or a plain object, which is automatically wrapped in `$set`.
+- ReplaceOne replaces the entire document (unlike UpdateOne which modifies specific fields). The replacement document must not contain any update operators.

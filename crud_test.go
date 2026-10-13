@@ -50,6 +50,22 @@ func TestCRUDOperations(t *testing.T) {
 		t.Fatalf("unexpected name after update %v", doc["name"])
 	}
 
+	replacement := bson.M{"_id": "crud-1", "name": "replaced", "status": "active"}
+	if err := client.ReplaceOne(db, col, filter, replacement); err != nil {
+		t.Fatalf("replace: %v", err)
+	}
+
+	doc, err = client.FindOne(db, col, filter)
+	if err != nil {
+		t.Fatalf("find after replace: %v", err)
+	}
+	if doc["name"] != "replaced" {
+		t.Fatalf("unexpected name after replace %v", doc["name"])
+	}
+	if doc["status"] != "active" {
+		t.Fatalf("unexpected status after replace %v", doc["status"])
+	}
+
 	if err := client.DeleteOne(db, col, filter); err != nil {
 		t.Fatalf("delete: %v", err)
 	}

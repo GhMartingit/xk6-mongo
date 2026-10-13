@@ -216,6 +216,7 @@ const (
 	errFindingDocument       = "Error while finding the document: %v"
 	errUpdatingDocument      = "Error while updating the document: %v"
 	errUpdatingDocuments     = "Error while updating the documents: %v"
+	errReplacingDocument     = "Error while replacing the document: %v"
 	errDeletingDocument      = "Error while deleting the document: %v"
 	errDeletingDocuments     = "Error while deleting the documents: %v"
 	errPerformingUpsert      = "Error while performing upsert: %v"
@@ -229,7 +230,7 @@ const (
 	errCreatingIndex         = "Error while creating index: %v"
 	errDroppingIndex         = "Error while dropping index: %v"
 	errListingIndexes        = "Error while listing indexes: %v"
-	errWatchingCollection    = "Error while watching collection: %v"
+	errWatchingCollection    = "Error while watch collection: %v"
 	errStartingSession       = "Error while starting session: %v"
 	errDroppingDatabase      = "Error while dropping database: %v"
 	errListingCollections    = "Error while listing collections: %v"
@@ -422,6 +423,32 @@ func (c *Client) UpdateMany(database string, collection string, filter any, data
 	_, err = col.UpdateMany(ctx, filter, update)
 	if err != nil {
 		log.Printf(errUpdatingDocuments, err)
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) ReplaceOne(database string, collection string, filter any, replacement any) error {
+	if filter == nil {
+		return errFilterNil
+	}
+	if replacement == nil {
+		return errors.New("replacement document cannot be nil")
+	}
+
+	col, err := c.getCollection(database, collection)
+	if err != nil {
+		log.Printf(errValidatingCollection, err)
+		return err
+	}
+
+	ctx, cancel := c.getContext()
+	defer cancel()
+
+	_, err = col.ReplaceOne(ctx, filter, replacement)
+	if err != nil {
+		log.Printf(errReplacingDocument, err)
 		return err
 	}
 

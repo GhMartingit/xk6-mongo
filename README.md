@@ -4,7 +4,7 @@ A k6 extension for interacting with MongoDB while performance testing.
 
 ## Features
 
-- **CRUD Operations**: Insert, InsertMany, Find, FindOne, FindAll, UpdateOne, UpdateMany, DeleteOne, DeleteMany
+- **CRUD Operations**: Insert, InsertMany, Find, FindOne, FindAll, UpdateOne, UpdateMany, ReplaceOne, DeleteOne, DeleteMany
 - **Advanced Operations**: Upsert, FindOneAndUpdate, Aggregate, Distinct, CountDocuments
 - **Bulk Operations**: BulkWrite for mixed insert/update/delete operations
 - **Index Management**: CreateIndex, DropIndex, ListIndexes
@@ -282,6 +282,7 @@ export default () => {
 - `findAll(db, collection)` - Find all documents in a collection
 - `updateOne(db, collection, filter, update)` - Update a single document
 - `updateMany(db, collection, filter, update)` - Update multiple documents
+- `replaceOne(db, collection, filter, replacement)` - Replace a single document (entire document replacement)
 - `deleteOne(db, collection, filter)` - Delete a single document
 - `deleteMany(db, collection, filter)` - Delete multiple documents
 
