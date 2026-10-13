@@ -4,8 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-13
+
 ### Added
 - **k6 v2 support**: the extension now registers under both the k6 v1 (`go.k6.io/k6`) and k6 v2 (`go.k6.io/k6/v2`) module systems, so a single codebase works with `xk6 build` against either major version.
+- **E2E CI coverage**: a dedicated CI job builds the extension with `xk6` against both k6 v1 and v2 and runs a real script against a live MongoDB, verifying the extension actually works at runtime rather than just that it builds.
 
 ## [1.3.0] - 2026-10-13
 
